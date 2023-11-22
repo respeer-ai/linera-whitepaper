@@ -140,3 +140,24 @@ The last use case is how Linera manages the current set of validators, also know
 Linera is designed to be Byzantine-Fault Tolerant (BFT) [13]. All participants generate a key pair consisting of a private signature key and the corresponding public verification key. Linera uses a delegated proof of stake (DPoS) model [28], where the voting power of each validator is bound to its stake and the stake delegated to it by users.
 
 **Assumptions.** We present the Linera protocol for a total voting power of *N*. A fixed, unknown subset of *Byzantine* (aka *dishonest*) validators may deviate from the protocol. It is assumed that they control at most *f* voting power for some value *f* such that 0 ≤ *f* < $\frac{ N }{ 3 }$. This is similar to many BFT protocols [7, 13]. In practice, one chooses the largest possible value for *f*, namely *f* = $\lfloor \frac{ N - 1 }{ 3 } \rfloor$.
+
+We do not make any assumptions about users, chain owners, or on the networking layer when it comes to safety properties. Unless specified otherwise, liveness properties do not depend on network delays or message ordering. In other words, the network is *asynchronous* [13].
+
+We use the word *quorum* to refer to a set of signatures issued by validators with a combined voting power of at least *N − f*. An important property of quorums, called quorum *intersection*, is that for any two quorums, there exists an honest validator *α* that is present in both. When data (typically a block) is signed by a quorum of validators, it is said to be *certified*. Certified data is also called a *certificate* for short.
+
+**Goals.** Linera aims to guarantee the following security properties:
+- *Safety:* For any microchain, every validator sees (a prefix of) the same chain of blocks, therefore it applies the same sequence of modifications to the execution state of the chain and eventually delivers the same set of messages to the other chains.
+- *Eventual consistency of chains:* If a microchain is extended with a new certified block on an honest validator, any user can take a series of steps to ensure that this block is added to the chain on every honest validator.
+- *Eventual consistency of asynchronous messages:* If a microchain receives a cross-chain message on an honest validator, any user can take a series of steps to ensure that this message is received by the chain on every honest validator.
+- *Authenticity:* Only the owner(s) of a microchain can extend their microchain.
+- *Piecewise Auditability:* There is sufficient public cryptographic evidence for the state of Linera to be audited for correctness in a distributed way, one chain at a time.
+
+For single-owner chains (Section 2.4), Linera also guarantees the following properties:
+
+- *Monotonic block validation:* In a single-owner chain, if a block proposal is the first one to be signed by the owner at a given block height and it is accepted by an honest validator, then with appropriate actions, the chain owner always eventually succeeds in gathering enough votes to produce a certificate.
+- *Worst-case Efficiency:* In a single-owner chain, Byzantine validators cannot significantly delay block proposals and block confirmations by correct users.
+
+### 2.2 Notations
+
+We assume a collision-resistant hash function, noted **hash**(·), as well as a secure public-key signature scheme **sign**[.]. A quorum of signatures on a block *B* forms a certificate noted *C* = **cert**[*B*]. In the rest of this report, we identify certificates on the same block *B* and simply write *C* = **cert**[*B*] when *C* is any certificate on *B*.
+
