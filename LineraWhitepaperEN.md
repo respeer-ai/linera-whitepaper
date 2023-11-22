@@ -114,4 +114,27 @@ The classical “blockchain trilemma” [10] asserts the difficulty of simultane
 
 Using large validators for performance and maintaining decentralization using communitydriven auditors has been discussed by the blockchain community in the context of rollups [10]. As the Linera project makes progress, we will continue to monitor the technical advances in the field of validity (“ZK”) proofs and chain compression. Decentralization of Linera is further discussed in Section 5.
 
+## 2 The Linera Multi-Chain Protocol
 
+We now introduce the multi-chain protocol at the core of the Linera infrastructure. This technical description is meant to illustrate the main ideas of the protocol without being exhaustive. We analyze the protocol informally in Section 3 and discuss the programming model in Section 4.
+
+### 2.1 Participants: users, validators, chain owners
+
+The Linera protocol aims to provide a computing infrastructure where developers create decentralized applications and end users interact with them in a secure and efficient way.
+
+As usual for blockchain systems, the state of an application in Linera is replicated across several partially-trusted nodes called validators. Modifying the state of an application is done by inserting a transaction into a new block and submitting the new block to the validators.
+
+To support scalability requirements, Linera is designed from the start as an integrated multi-chain system: instead of using a single chain, transactions are organized in many parallel chains of blocks, called microchains. This means that the state of Linera applications is typically distributed across chains. Importantly, unless a reconfiguration is in progress (Section 2.9), a single set of validators is in use for all the microchains.
+
+In Linera, the task of extending a chain with new blocks is separate from the task of validating blocks. Proposing blocks is assumed by the owners of a microchain. In practice, the owner(s) of a chain can be any participant to the protocol. Because Linera validators act as a block validation service, chain owners may also be referred to as clients. Examples of chain owners include:
+
+- End users who wish more control over their accounts in different applications;
+- End users who wish to operate a temporary chain (e.g. for an atomic swap);
+- Developers who wish to publish code or manage applications;
+- Validators who collectively run a public chain (e.g. for infrastructure purposes).
+
+The last use case is how Linera manages the current set of validators, also known as the committee. The programming model of Linera is presented in Section 4. The additional role of auditors is discussed in Section 5.
+
+### 2.2 Security model
+
+Linera is designed to be Byzantine-Fault Tolerant (BFT) [13]. All participants generate a key pair consisting of a private signature key and the corresponding public verification key. Linera uses a delegated proof of stake (DPoS) model [28], where the voting power of each validator is bound to its stake and the stake delegated to it by users.
