@@ -323,7 +323,7 @@ We have found pub/sub channels to be a useful abstraction when programming Liner
 
 To do so, Linera deploys a dedicated Admin public chain running the application for system management. This system application is in charge of keeping track of the successive sets of validators, aka *committees*, including their stakes and network addresses. The successive configurations produced by this application are identified by their *epoch* number.
 
-To safely disseminate the information that the set of validators is changing, the Admin publishes new configurations to a special channel that every Linera microchain is subscribed to when created.$^2$ A newly created microchain automatically receives the current validator set (*i.e.* the last message in the admin channel) and sets its current epoch number field.
+To safely disseminate the information that the set of validators is changing, the Admin publishes new configurations to a special channel that every Linera microchain is subscribed to when created.$^{2}$ A newly created microchain automatically receives the current validator set (*i.e.* the last message in the admin channel) and sets its current epoch number field.
 
 When a new committee is created, every microchain receives a message in its inbox. Importantly, microchain owners must include the incoming message in a new block to explicitly migrate their chain to the new set of validators. This must be done when both sets of validators are still operating, before the previous set stops.
 
