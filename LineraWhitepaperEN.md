@@ -1,4 +1,4 @@
-![image](https://github.com/kikakkz/linera-whitepaper/assets/13128505/2d9e2c88-07bd-476e-953f-e445cb20ee38)## Linera: a Blockchain Infrastructure for Highly Scalable Web3 Applications
+## Linera: a Blockchain Infrastructure for Highly Scalable Web3 Applications
 #### Version 2 – August 16, 2023
 ### Abstract
 
