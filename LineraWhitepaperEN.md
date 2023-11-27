@@ -469,4 +469,17 @@ In contrast, the microchain approach makes it possible for the community to cont
 
 For the Linera community to continuously verify all the chains, a distributed protocol can be put in place on top of a shared distributed storage such as IPFS [5] as follows. Executing the blocks in a chain allows to verify the execution state and the outgoing messages. Blocks should typically be marked as audited and the outgoing messages indexed in the distributed storage. To complete the verification of a chain, the client must also verify that each incoming message was indeed produced by its sender chain. This can be done by looking up incoming messages in the shared storage to see if they have been verified already, and otherwise, schedule their verification.
 
+## Conclusion
+
+Linera aims to deliver the first multi-chain infrastructure with predictable performance, responsiveness, and security at the Internet scale. To do so, Linera introduces the idea of operating many parallel chains, called *microchains*, in the same set of validators, and using the internal network of each validator to quickly deliver the asynchronous messages between chains. This architecture has a number of advantages:
+
+- **Elastic scaling.** In Linera, scalability is obtained by adding chains, not by increasing the size or the rate of blocks. Each validator may add and remove capacity (aka internal workers) at any time to maintain nominal performance for multi-chain applications.
+- **Responsiveness.** When microchains are operated by a single user, Linera uses a simplified mempool-free consensus protocol inspired by reliable broadcast [7,12]. This reduces block latency and ultimately makes Web3 applications more responsive.
+- **Composability.** Compared to other multi-chain systems, low block latency also helps with composability: it allows receivers of asynchronous messages from another chain to quickly answer by adding a new block.
+- **Chain security.** Compared to traditional multi-chain systems, a benefit of running all the microchains in the same set of validators is that creating chains does not impact the security model of Linera.
+- **Decentralization.** Linera relies on delegated proof of stake (DPoS) for security. Each microchain can be separately executed on commodity hardware. This allows clients and auditors to continuously run their own verifications and hold validators accountable.
+- **Language agnostic.** The programming model of Linera does not depend on a specific programming language. After careful consideration, we have decided to concentrate our efforts on Wasm and Rust for the initial execution layer of Linera.
+
+In future reports, we will formalize the protocols to support multi-owner chains as well as the other extensions mentioned in Section 2.9. In particular, we plan to incorporate a state-of-the-art consensus mechanism (e.g. [16, 22, 27]) on top of our existing multi-chain infrastructure. We also plan to describe the economic models for the fair remuneration of validators and incentivization of users separately. Linera’s ability to deactivate and archive microchains provides an elegant venue to control the storage costs of validators in the future. In general, we anticipate that Linera’s integrated architecture and the minimization of validator interactions will be extremely helpful when it comes to optimizing the costs of operating validators at scale.
+
 
