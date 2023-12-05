@@ -230,7 +230,6 @@ The field **pending**$^{id}$(*α*) is specific to single-owner chains and explai
 
 **Inbox state.** An inbox $I = {inbox}^{id}(α)$ is a special data structure used to track the crosschain messages received by *id* and waiting to be consumed by a transaction. Specifically, messages are *added* to an inbox upon reception and *removed* from it after being executed by the receiving chain.
 
-```Need to check again```
 
 An important property of an inbox is that adding or consuming distinct messages is commutative. In the simplest implementation, one can think of an inbox as two disjoint sets of messages $I = (I_+, I_−)$. We may define the addition of a message *m* to *I*, noted $I + m$, as $(I_+ ∪$ {m}, $I_−)$ if $m \notin I_−$ and $(I_+, I_−$\\{m}) otherwise. Similarly, the subtraction $I − m$ is $(I_+, I_− ∪$ {m}) if $m \notin I_+$ and $(I_+$\\{m}, $I_−)$ otherwise. In this setting, when ${inbox}^{id}(α) = (I_+, I_−)$, the set $I_+$ represents the messages m that have been received by *id* and are waiting to be executed in a next block; $I_−$ tracks the messages that have not been received by *id* yet (from the point of view of *α*) but were nonetheless executed by anticipation because of a certified block. In this simplified presentation, we are assuming that messages are never replayed identically, say, because they include a counter for each pair of sender and receiver $(id, id')$.
 
@@ -270,7 +269,6 @@ In practice, the need to upload such a sequence of certificates justifies that t
 
 **Extending a single-owner chain.** In the common scenario where validators are sufficiently up-to-date, Linera clients may extend their chain with a new block *B* using a variant of reliable broadcast [7, 12] illustrated in Figure 1 and going as follows.
 
-```Refactor the sign```
 - The client broadcasts the block *B* authenticated by its signature to each validator using the HandleRequest entry point $α(&#x2460;)$ and waits for a quorum of responses.
 - A validator responds to a *valid* request $R = auth[B]$ of the expected height by sending back a signature on *B*, called a *vote*, as acknowledgment (&#x2462;). After receiving votes from a quorum of validators, a client forms a certificate $C = cert[B]$.
 - When a certificate $C = cert[B]$ with the expected next block height is uploaded (&#x2463;), this triggers the one-time execution of the block *B* (&#x2464;).
