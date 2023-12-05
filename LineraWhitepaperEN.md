@@ -275,18 +275,18 @@ In practice, the need to upload such a sequence of certificates justifies that t
 - A validator responds to a *valid* request $R = auth[B]$ of the expected height by sending back a signature on *B*, called a *vote*, as acknowledgment (&#x2462;). After receiving votes from a quorum of validators, a client forms a certificate $C = cert[B]$.
 - When a certificate $C = cert[B]$ with the expected next block height is uploaded (&#x2463;), this triggers the one-time execution of the block *B* (&#x2464;).
 
-A synchronization step is occasionally needed first (&#x2460;) if some validator *α* is unable to vote right away for an otherwise-valid proposal $B = Block(id, n, h, \widetilde{T})$. This may happen for two reasons:
+A synchronization step is occasionally needed first (&#x24EA;) if some validator *α* is unable to vote right away for an otherwise-valid proposal $B = Block(id, n, h, \widetilde{T})$. This may happen for two reasons:
 
 ![image](https://github.com/kikakkz/linera-whitepaper/assets/13128505/46ef58c9-a9f0-40b7-ac8e-bfe704e36699)
 
 - 1. either the chain *id* is not active yet or *α* is missing earlier blocks (*i.e.* formally ${owner}^{id}(α) = ⊥$ or **next-height**$^{id}(α) < n$);
 - 2. *α* is missing cross-chain messages, that is: $I_− = {inbox}^{id}$ is not empty at the end of the staged execution of $\widetilde{T}$.
 
-In the first case, the Linera client must upload missing certificates in the chain *id* (and possibly its ancestors) as described in the previous paragraph, until **next-height**$^{id}$(α) = n$. In the second case, the client must upload missing certificates in the chains that have sent the messages $m ∈ I_−$ to *id*. When *B* has been correctly constructed (*i.e.* is not trying to receive messages that were never sent), the set $I_−$ is necessarily covered by the certificates listed in the union $\cup_α' {received}^{id}(α')$ where $α'$ ranges over any quorum of validators.
+In the first case, the Linera client must upload missing certificates in the chain *id* (and possibly its ancestors) as described in the previous paragraph, until **next-height**$^{id}$(α) = n. In the second case, the client must upload missing certificates in the chains that have sent the messages $m ∈ I_−$ to *id*. When *B* has been correctly constructed (*i.e.* is not trying to receive messages that were never sent), the set $I_−$ is necessarily covered by the certificates listed in the union $\cup_α' {received}^{id}(α')$ where $α'$ ranges over any quorum of validators.
 
 Importantly, uploading a missing block to a validator benefits all clients. To maximize liveness and decrease the latency of their future transactions, in practice, it is expected that users proactively update all the validators when it comes to their own chains, therefore minimizing the need for synchronization by other clients. However, the possibility of synchronization by everyone is important for liveness (Section 3.3). It also allows a certificate to act as a proof of finality for the certified block.
 
-In practice, a client should execute the optional synchronization step (&#x2460;) and the voting step (&#x2461;) on a separate thread for each validator. To prevent denial-of-service attacks from malicious validators, a client may stop synchronizing validators as soon as enough votes are collected (&#x2462;).
+In practice, a client should execute the optional synchronization step (&#x24EA;) and the voting step (&#x2460;) on a separate thread for each validator. To prevent denial-of-service attacks from malicious validators, a client may stop synchronizing validators as soon as enough votes are collected (&#x2461;).
 
 The steps &#x2460;&#x2461;&#x2462; used to decide a new block in a single-owner chain constitute a 1.5 round-trip protocol. Inspired by reliable broadcast, this protocol does not have a notion of “view change” [12] to support retries. In other words, a chain owner that has started submitting a (valid) block proposal *B* cannot interrupt the process to propose a different block once some validators have voted for *B*. Doing so would risk blocking their chain. For this reason, Linera also supports a variant with an extra round trip (Section 2.9).
 
