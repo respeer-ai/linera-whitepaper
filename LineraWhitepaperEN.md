@@ -46,7 +46,7 @@ A [**Cross-chain communication**](<>)<br>
 ## 1 Introduction
 ### 1.1 The need for predictable performance and responsiveness in Web3
 
-Thanks to blockchain technologies, the next iteration of the Internet, Web3, will empower users with a new generation of asset-aware applications and give them more democratic control over the digital economy. However, developing Web3 applications with a great user experience is currently a challenging task. One of the issues is reliability and responsiveness at scale: when too many users are active, blockchains may stop responding or demand punishing fees. In general, application developers want their infrastructure programming interfaces to be easy to use and predictable, disregarding the traffic caused by other applications. Centralized API providers [30] have been proposed to facilitate programming on top of popular blockchains, but such providers need to be trusted and will not improve the performance and the fees of the underlying blockchains. Linera aims to close the gap between centralized and decentralized applications by delivering a blockchain infrastructure that guarantees performance and responsiveness at scale.
+Thanks to blockchain technologies, the next iteration of the Internet, Web3, will empower users with a new generation of asset-aware applications and give them more democratic control over the digital economy. However, developing Web3 applications with a great user experience is currently a challenging task. One of the issues is reliability and responsiveness at scale: when too many users are active, blockchains may stop responding or demand punishing fees. In general, application developers want their infrastructure programming interfaces to be easy to use and predictable, disregarding the traffic caused by other applications. Centralized API providers <a href='#锚点30'>[30]</a> have been proposed to facilitate programming on top of popular blockchains, but such providers need to be trusted and will not improve the performance and the fees of the underlying blockchains. Linera aims to close the gap between centralized and decentralized applications by delivering a blockchain infrastructure that guarantees performance and responsiveness at scale.
 
 ### 1.2 The blockspace scarcity problem
 
@@ -480,4 +480,75 @@ Linera aims to deliver the first multi-chain infrastructure with predictable per
 
 In future reports, we will formalize the protocols to support multi-owner chains as well as the other extensions mentioned in Section 2.9. In particular, we plan to incorporate a state-of-the-art consensus mechanism (e.g. [16, 22, 27]) on top of our existing multi-chain infrastructure. We also plan to describe the economic models for the fair remuneration of validators and incentivization of users separately. Linera’s ability to deactivate and archive microchains provides an elegant venue to control the storage costs of validators in the future. In general, we anticipate that Linera’s integrated architecture and the minimization of validator interactions will be extremely helpful when it comes to optimizing the costs of operating validators at scale.
 
+<h1>References</h1>
+[1] Linera developer manual. https://linera.dev.
 
+[2] Linera github repository. https://github.com/linera-io/linera-protocol.
+
+[3] WebAssembly. https://webassembly.org/.
+
+[4] The Bytecode Alliance. https://bytecodealliance.org/, 2022.
+
+[5] The InterPlanetary File System. https://ipfs.tech/, 2022.
+
+[6] Gul Agha. Actors: a model of concurrent computation in distributed systems. MIT press, 1986.
+
+[7] Mathieu Baudet, George Danezis, and Alberto Sonnino. Fastpay: High-performance Byzantine fault tolerant settlement. In Proceedings of the 2nd ACM Conference on Advances in Financial Technologies, pages 163–177, 2020.
+
+[8] Mathieu Baudet, Alberto Sonnino, Mahimna Kelkar, and George Danezis. Zef: Low-latency, scalable, private payments. arXiv preprint arXiv:2201.05671, 2022.
+
+[9] Sam Blackshear, Evan Cheng, David L. Dill, Victor Gao, Ben Maurer, Todd Nowacki, Alistair Pott, Shaz Qadeer, Rain, Dario Russi, Stephane Sezer,
+
+Tim Zakian, and Runtian Zhou.  Move: A language with programmable resources.  https://diem-developers-components.netlify.app/papers/
+
+diem-move-a-language-with-programmable-resources/2020-05-26.pdf, 2020.
+
+[10] Vitalik Buterin. Endgame. https://vitalik.ca/general/2021/12/06/endgame.html, 2021.
+
+[11] Vitalik Buterin. An incomplete guide to rollups. https://vitalik.ca/general/2021/01/05/rollup.html, 2021.
+
+[12] Christian Cachin, Rachid Guerraoui, and Luı́s Rodrigues. Introduction to reliable and secure distributed programming. Springer Science & Business Media, 2011.
+
+[13] Miguel Castro, Barbara Liskov, et al. Practical Byzantine fault tolerance. In OsDI, volume 99, pages 173–186, 1999.
+
+[14] Panagiotis Chatzigiannis, Foteini Baldimtsi, and Konstantinos Chalkias. Sok:Blockchain light clients. Cryptology ePrint Archive, 2021.
+
+[15] Philip Daian, Steven Goldfeder, Tyler Kell, Yunqi Li, Xueyuan Zhao, Iddo Bentov,Lorenz Breidenbach, and Ari Juels. Flash boys 2.0: Frontrunning in decentralized ex-changes, miner extractable value, and consensus instability. In 2020 IEEE Symposium on Security and Privacy (SSP’20), pages 910–927. IEEE, 2020.
+
+[16] George Danezis, Lefteris Kokoris-Kogias, Alberto Sonnino, and Alexander Spiegelman. Narwhal and Tusk: a DAG-based mempool and efficient BFT consensus. In Proceedings of the Seventeenth European Conference on Computer Systems, pages 34–50, 2022.
+
+[17] Evangelos Deirmentzoglou, Georgios Papakyriakopoulos, and Constantinos Patsakis. A survey on long-range attacks for proof of stake protocols. IEEE Access, 7:28712–28725,2019.
+
+[18] Ittay Eyal, Adem Efe Gencer, Emin Gün Sirer, and Robbert Van Renesse. {Bitcoin-NG}: A scalable blockchain protocol. In 13th USENIX symposium on networked sys-tems design and implementation (NSDI 16), pages 45–59, 2016.
+
+[19] Rati Gelashvili, Alexander Spiegelman, Zhuolun Xiang, George Danezis, Zekun Li,Dahlia Malkhi, Yu Xia, and Runtian Zhou. Block-STM: Scaling blockchain execution by turning ordering curse to a performance blessing, 2022.
+
+[20] Arthur Gervais, Ghassan O Karame, Karl Wüst, Vasileios Glykantzis, Hubert Ritzdorf,and Srdjan Capkun. On the security and performance of proof of work blockchains. In Proceedings of the 2016 ACM SIGSAC conference on computer and communications security, pages 3–16, 2016.
+
+[21] Arthur Gervais, Hubert Ritzdorf, Ghassan O Karame, and Srdjan Capkun. Tampering with the delivery of blocks and transactions in bitcoin. In Proceedings of the 22nd ACM SIGSAC Conference on Computer and Communications Security, pages 692–705, 2015.
+
+[22] Neil Giridharan, Lefteris Kokoris-Kogias, Alberto Sonnino, and Alexander Spiegelman. Bullshark: DAG BFT protocols made practical. arXiv preprint arXiv:2201.05677,2022.
+
+[23] Andreas Haas, Andreas Rossberg, Derek L Schuff, Ben L Titzer, Michael Holman, Dan Gohman, Luke Wagner, Alon Zakai, and JF Bastien. Bringing the web up to speed with webAssembly. In Proceedings of the 38th ACM SIGPLAN Conference on Programming Language Design and Implementation, pages 185–200, 2017.
+
+[24] Jae-Yun Kim, Junmo Lee, Yeonjae Koo, Sanghyeon Park, and Soo-Mook Moon. Ethanos: efficient bootstrapping for full nodes on account-based blockchain. In Pro-ceedings of the Sixteenth European Conference on Computer Systems, pages 99–113,2021.
+
+[25] Krešimir Klas. Smart contract development — Move vs. Rust. https://medium.com/@kklas/smart-contract-development-move-vs-rust-4d8f84754a8f, 2022.
+
+[26] Michal Król, Onur Ascigil, Sergi Rene, Alberto Sonnino, Mustafa Al-Bassam, and Etienne Rivière. Shard scheduler: object placement and migration in sharded account-based blockchains. In Proceedings of the 3rd ACM Conference on Advances in Financial Technologies, pages 43–56, 2021.
+
+[27] Dahlia Malkhi and Kartik Nayak. Hotstuff-2: Optimal two-phase responsive bft. Cryp-tology ePrint Archive, 2023.
+
+[28] Du Mingxiao, Ma Xiaofeng, Zhang Zhe, Wang Xiangwei, and Chen Qijun. A review on consensus algorithm of blockchain. In 2017 IEEE international conference on systems,man, and cybernetics (SMC), pages 2567–2572. IEEE, 2017.
+
+[29] nanfengpo. A design of decentralized ZK-rollups based on EIP-4844. https://ethresear.ch/t/a-design-of-decentralized-zk-rollups-based-on-eip-4844/
+
+12434, 2022.
+
+<a name='锚点30'>[30]</a> Slashdot. Best blockchain apis of 2022. https://slashdot.org/software/blockchain-apis/, 2022.
+
+[31] Alberto Sonnino. Chainspace: A sharded smart contract platform. In Network andDistributed System Security Symposium 2018 (NDSS 2018), 2018.
+
+[32] Gavin Wood et al. Ethereum: A secure decentralised generalised transaction ledger.Ethereum project yellow paper, 151(2014):1–32, 2014.
+
+[33] Mahdi Zamani, Mahnush Movahedi, and Mariana Raykova. Rapidchain: Scaling blockchain via full sharding. In Proceedings of the 2018 ACM SIGSAC conference on computer and communications security, pages 931–948, 2018.
