@@ -290,7 +290,7 @@ The steps &#x2460;&#x2461;&#x2462; used to decide a new block in a single-owner 
 
 ### 2.9 Extensions to the core protocol
 
-<a href='#Section2.9'>We</a> now sketch a number of important extensions to the core Linera multi-chain protocol.
+<a name='Section2。9'>We</a> now sketch a number of important extensions to the core Linera multi-chain protocol.
 
 **Permissioned chains.** The protocol presented in Section <a href='#Section2.8'>2.8</a> allows extending a singleowner microchain optimistically in 1.5 client-validator round trips. Linera also supports a more complex protocol with 2.5 round trips to address the following use cases:
 
@@ -331,7 +331,7 @@ To prevent long-range attacks, the Admin chain will also regularly suggest old c
 
 ## 3 Analysis of the Multi-Chain Protocol
 
-<a href='#Section2'>In</a> this section, we analyze the design goals set by the Linera blockchain, including responsiveness, scalability and security guarantees.
+<a name='Section3'>In</a> this section, we analyze the design goals set by the Linera blockchain, including responsiveness, scalability and security guarantees.
 
 ### 3.1 Responsiveness
 
