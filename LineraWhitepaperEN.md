@@ -114,9 +114,9 @@ The classical “blockchain trilemma” <a href='#References10'>[10]</a> asserts
 
 Using large validators for performance and maintaining decentralization using communitydriven auditors has been discussed by the blockchain community in the context of rollups <a href='#References10'>[10]</a>. As the Linera project makes progress, we will continue to monitor the technical advances in the field of validity (“ZK”) proofs and chain compression. Decentralization of Linera is further discussed in Section 5.
 
-## <a name='Section2'>2</a> The Linera Multi-Chain Protocol
+## 2 The Linera Multi-Chain Protocol
 
-We now introduce the multi-chain protocol at the core of the Linera infrastructure. This technical description is meant to illustrate the main ideas of the protocol without being exhaustive. We analyze the protocol informally in Section 3 and discuss the programming model in Section 4.
+<a name='Section2'>We</a> now introduce the multi-chain protocol at the core of the Linera infrastructure. This technical description is meant to illustrate the main ideas of the protocol without being exhaustive. We analyze the protocol informally in Section 3 and discuss the programming model in Section 4.
 
 ### 2.1 Participants: users, validators, chain owners
 
