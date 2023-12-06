@@ -92,7 +92,7 @@ To fulfill our vision of a Web3 infrastructure with predictable performance and 
 - (**4**) Microchains may differ in the way they accept new blocks. When extending their own chains, users submit new blocks directly to validators using a low-latency, mempool-free protocol inspired by reliable broadcast [<a href='#References7'>7</a>, <a href='#References12'>12</a>]. Applications that require more complex interactions between users may also rely on ephemeral microchains created on demand. In practice, only the public microchains owned by the Linera infrastructure necessitate a full BFT consensus protocol <a href='#References12'>[12]<12>.
 - (**5**) As a rule, validators do not interact—except for public chains owned by the infrastructure. Synchronization of microchains between validators is delegated to chain owners. This means that inactive microchains (those not creating blocks) have no cost for validators other than storage.
 
-Using elastic validators is a distinctive assumption of Linera. We intend for the Linera community to support a variety of cloud providers that new validators can choose from. Linera was initially inspired by the academic low-latency payment protocol FastPay developed at Meta <a href='#References7'>[7]</a>. Linera generalizes FastPay notably by turning user accounts into microchains, adding smart contracts, and supporting arbitrary asynchronous messages between chains. A more detailed description of the Linera multi-chain protocol is given in Section 2. We analyze the protocol in Section 3.
+Using elastic validators is a distinctive assumption of Linera. We intend for the Linera community to support a variety of cloud providers that new validators can choose from. Linera was initially inspired by the academic low-latency payment protocol FastPay developed at Meta <a href='#References7'>[7]</a>. Linera generalizes FastPay notably by turning user accounts into microchains, adding smart contracts, and supporting arbitrary asynchronous messages between chains. A more detailed description of the Linera multi-chain protocol is given in Section <a href='#Section2'>2</a>. We analyze the protocol in Section 3.
 
 #### 1.5.2 Making multi-chain programming mainstream
 
@@ -114,7 +114,7 @@ The classical “blockchain trilemma” <a href='#References10'>[10]</a> asserts
 
 Using large validators for performance and maintaining decentralization using communitydriven auditors has been discussed by the blockchain community in the context of rollups <a href='#References10'>[10]</a>. As the Linera project makes progress, we will continue to monitor the technical advances in the field of validity (“ZK”) proofs and chain compression. Decentralization of Linera is further discussed in Section 5.
 
-## 2 The Linera Multi-Chain Protocol
+## <a name='Section2'>2</a> The Linera Multi-Chain Protocol
 
 We now introduce the multi-chain protocol at the core of the Linera infrastructure. This technical description is meant to illustrate the main ideas of the protocol without being exhaustive. We analyze the protocol informally in Section 3 and discuss the programming model in Section 4.
 
