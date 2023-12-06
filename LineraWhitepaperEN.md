@@ -92,7 +92,7 @@ To fulfill our vision of a Web3 infrastructure with predictable performance and 
 - (**4**) Microchains may differ in the way they accept new blocks. When extending their own chains, users submit new blocks directly to validators using a low-latency, mempool-free protocol inspired by reliable broadcast [<a href='#References7'>7</a>, <a href='#References12'>12</a>]. Applications that require more complex interactions between users may also rely on ephemeral microchains created on demand. In practice, only the public microchains owned by the Linera infrastructure necessitate a full BFT consensus protocol <a href='#References12'>[12]<12>.
 - (**5**) As a rule, validators do not interact—except for public chains owned by the infrastructure. Synchronization of microchains between validators is delegated to chain owners. This means that inactive microchains (those not creating blocks) have no cost for validators other than storage.
 
-Using elastic validators is a distinctive assumption of Linera. We intend for the Linera community to support a variety of cloud providers that new validators can choose from. Linera was initially inspired by the academic low-latency payment protocol FastPay developed at Meta <a href='#References7'>[7]</a>. Linera generalizes FastPay notably by turning user accounts into microchains, adding smart contracts, and supporting arbitrary asynchronous messages between chains. A more detailed description of the Linera multi-chain protocol is given in Section <a href='#Section2'>2</a>. We analyze the protocol in Section 3.
+Using elastic validators is a distinctive assumption of Linera. We intend for the Linera community to support a variety of cloud providers that new validators can choose from. Linera was initially inspired by the academic low-latency payment protocol FastPay developed at Meta <a href='#References7'>[7]</a>. Linera generalizes FastPay notably by turning user accounts into microchains, adding smart contracts, and supporting arbitrary asynchronous messages between chains. A more detailed description of the Linera multi-chain protocol is given in Section <a href='#Section2'>2</a>. We analyze the protocol in Section <a href='#Section2'>3</a>.
 
 #### 1.5.2 Making multi-chain programming mainstream
 
@@ -103,7 +103,7 @@ Linera integrates many chains in a unique set of validators. This greatly facili
 
 Session objects in Linera are inspired by resources in the Move language <a href='#References9'>[9]</a>. Staticallytyped resources in Move have been proposed to help with composability <a href='#References25'>[25]</a>. In Linera, resource-like composability is achieved using session handles and runtime checks. For instance, to send tokens, a Linera contract will be able to transfer ownership of a temporary session containing the tokens.
 
-In general, building a large community of developers is a major factor in the adoption of blockchain infrastructures. Because the Wasm ecosystem is continuously improving its multi-language tooling <a href='#References4'>[4]</a>, it offers the long-term possibility for Linera to serve several developer communities. See Section 4 for a more detailed discussion of the programming model of Linera.
+In general, building a large community of developers is a major factor in the adoption of blockchain infrastructures. Because the Wasm ecosystem is continuously improving its multi-language tooling <a href='#References4'>[4]</a>, it offers the long-term possibility for Linera to serve several developer communities. See Section <a href='#Section4'>4</a> for a more detailed discussion of the programming model of Linera.
 
 #### 1.5.3 Robust decentralization for elastic validators
 
@@ -112,11 +112,11 @@ The classical “blockchain trilemma” <a href='#References10'>[10]</a> asserts
 - (**8**) Linera relies on delegated proof of stake (DPoS) for security and supports regularly changing sets of validators. Thanks to the chaining of blocks, the past transactions, the cross-chain messages, and the execution state of each microchain are tamper-resistant.
 - (**9**) Microchains are designed to be auditable independently. This means that Linera as a whole will be auditable in a distributed way by the community, using only commodity hardware.
 
-Using large validators for performance and maintaining decentralization using communitydriven auditors has been discussed by the blockchain community in the context of rollups <a href='#References10'>[10]</a>. As the Linera project makes progress, we will continue to monitor the technical advances in the field of validity (“ZK”) proofs and chain compression. Decentralization of Linera is further discussed in Section 5.
+Using large validators for performance and maintaining decentralization using communitydriven auditors has been discussed by the blockchain community in the context of rollups <a href='#References10'>[10]</a>. As the Linera project makes progress, we will continue to monitor the technical advances in the field of validity (“ZK”) proofs and chain compression. Decentralization of Linera is further discussed in Section <a href='#Section5'>5</a>.
 
 ## 2 The Linera Multi-Chain Protocol
 
-<a name='Section2'>We</a> now introduce the multi-chain protocol at the core of the Linera infrastructure. This technical description is meant to illustrate the main ideas of the protocol without being exhaustive. We analyze the protocol informally in Section 3 and discuss the programming model in Section 4.
+<a name='Section2'>We</a> now introduce the multi-chain protocol at the core of the Linera infrastructure. This technical description is meant to illustrate the main ideas of the protocol without being exhaustive. We analyze the protocol informally in Section 3 and discuss the programming model in Section <a href='#Section4'>4</a>.
 
 ### 2.1 Participants: users, validators, chain owners
 
@@ -331,7 +331,7 @@ To prevent long-range attacks, the Admin chain will also regularly suggest old c
 
 ## 3 Analysis of the Multi-Chain Protocol
 
-In this section, we analyze the design goals set by the Linera blockchain, including responsiveness, scalability and security guarantees.
+<a href='#Section2'>In</a> this section, we analyze the design goals set by the Linera blockchain, including responsiveness, scalability and security guarantees.
 
 ### 3.1 Responsiveness
 
@@ -393,7 +393,7 @@ If the block proposal *B* for a chain *id* is accepted by a validator and is the
 
 ## 4 Building Web3 Applications in Linera
 
-The programming model of Linera <a href='#References30'>[1]</a> is designed to provide rich, language-agnostic composability to application developers while taking advantage of microchains for scaling.
+<a name='Section4'>The</a> programming model of Linera <a href='#References30'>[1]</a> is designed to provide rich, language-agnostic composability to application developers while taking advantage of microchains for scaling.
 
 ### 4.1 Creating applications
 
@@ -451,7 +451,7 @@ To optimize liveness in the case of an ephemeral permissioned chain (Section 2.9
 
 ## 5 Decentralization
 
-Linera encourages validators to use cloud infrastructure to unlock elastic scaling and benefit from standard production environments. To maximize decentralization, Linera relies on two key features: delegated proof of stake (DPoS) and audits by the community.
+<a name='Section5'>Linera</a> encourages validators to use cloud infrastructure to unlock elastic scaling and benefit from standard production environments. To maximize decentralization, Linera relies on two key features: delegated proof of stake (DPoS) and audits by the community.
 
 ### 5.1 Delegated proof of stake
 
