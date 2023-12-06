@@ -161,7 +161,7 @@ For single-owner chains (Section <a href='#Section2.4'>2.4</a>), Linera also gua
 
 We assume a collision-resistant hash function, noted **hash**(·), as well as a secure public-key signature scheme **sign**[.]. A quorum of signatures on a block *B* forms a certificate noted *C* = **cert**[*B*]. In the rest of this report, we identify certificates on the same block *B* and simply write *C* = **cert**[*B*] when *C* is any certificate on *B*.
 
-The state of the Linera system is replicated across all validators. For a given validator, noted *α*, we use the notation *X*(*α*) to denote the current view of *α* regarding some replicated data *X*. A *data type D* = $<Tag, arg_1, . . . , arg_n>$ is a sequence of values starting with a distinct marker **Tag** and meant to be sent over the network. We use capitalized names to distinguish data type markers from mathematical functions (e.g. **hash**) or data fields (e.g. **owner**$^{id}$(*α*)), and simply write **Tag**$(arg_1, . . . , arg_n)$ for a data type. We write $\widetilde{D}$ for a sequence of data types $(D_1, . . . D_n)$.
+The state of the Linera system is replicated across all validators. For a given validator, noted *α*, we use the notation *X*(*α*) to denote the current view of *α* regarding some replicated data *X*. A *data type D* = $< Tag, arg_1, . . . , arg_n >$ is a sequence of values starting with a distinct marker **Tag** and meant to be sent over the network. We use capitalized names to distinguish data type markers from mathematical functions (e.g. **hash**) or data fields (e.g. **owner**$^{id}$(*α*)), and simply write **Tag**$(arg_1, . . . , arg_n)$ for a data type. We write $\widetilde{D}$ for a sequence of data types $(D_1, . . . D_n)$.
 
 ### 2.4 Microchains
 
