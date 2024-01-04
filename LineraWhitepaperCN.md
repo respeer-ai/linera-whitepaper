@@ -16,32 +16,32 @@
 &ensp;&ensp;1.5.3 [弹性验证器的可靠去中心化](<>)<br>
 2 [**Linera多链协议**](<>)<br>
 &ensp;2.1 [参与者：用户、验证者、链所有者](<>)<br>
-&ensp;2.2 [Security model](<>)<br>
-&ensp;2.3 [Notations](<>)<br>
-&ensp;2.4 [Microchains](<>)<br>
-&ensp;2.5 [Cross-chain requests](<>)<br>
-&ensp;2.6 [Chain states](<>)<br>
-&ensp;2.7 [Block execution](<>)<br>
-&ensp;2.8 [Client/validator interactions](<>)<br>
-&ensp;2.9 [Extensions to the core protocol](<>)<br>
-3 [**Analysis of the Multi-Chain Protocol**](<>)<br>
-&ensp;3.1 [Responsiveness](<>)<br>
-&ensp;3.2 [Scalability](<>)<br>
-&ensp;3.3 [Security](<>)<br>
-4 [**Building Web3 Applications in Linera**](<>)<br>
-&ensp;4.1 [Creating applications](<>)<br>
-&ensp;4.2 [Multi-chain deployment](<>)<br>
-&ensp;4.3 [Cross-chain communication](<>)<br>
+&ensp;2.2 [安全模型](<>)<br>
+&ensp;2.3 [符号标记](<>)<br>
+&ensp;2.4 [微链](<>)<br>
+&ensp;2.5 [跨链请求](<>)<br>
+&ensp;2.6 [链状态](<>)<br>
+&ensp;2.7 [区块执行](<>)<br>
+&ensp;2.8 [客户端/验证器交互](<>)<br>
+&ensp;2.9 [核心协议的扩展](<>)<br>
+3 [**多链协议分析**](<>)<br>
+&ensp;3.1 [响应能力](<>)<br>
+&ensp;3.2 [可扩展性](<>)<br>
+&ensp;3.3 [安全性](<>)<br>
+4 [**使用Linera构建Web3应用程序**](<>)<br>
+&ensp;4.1 [创建应用](<>)<br>
+&ensp;4.2 [多链部署](<>)<br>
+&ensp;4.3 [跨链通信](<>)<br>
 &ensp;4.4 [Local composability](<>)<br>
 &ensp;4.5 [User authentication](<>)<br>
 &ensp;4.6 [Ephemeral chains](<>)<br>
-5 [**Decentralization**](<>)<br>
-&ensp;5.1 [Delegated proof of stake](<>)<br>
-&ensp;5.2 [Auditability](<>)<br>
-6 [**Conclusion**](<>)<br>
-A [**Cross-chain communication**](<>)<br>
-&ensp;A.1 [Messages and inboxes](<>)<br>
-&ensp;A.2 [Cross-chain requests and outboxes](<>)<br>
+5 [**去中心化**](<>)<br>
+&ensp;5.1 [委托权益证明](<>)<br>
+&ensp;5.2 [审计](<>)<br>
+6 [**结论**](<>)<br>
+A [**跨链通信**](<>)<br>
+&ensp;A.1 [消息和收件箱](<>)<br>
+&ensp;A.2 [跨链请求和发件箱](<>)<br>
 
 ## 1 Introduction
 ### 1.1 The need for predictable performance and responsiveness in Web3
