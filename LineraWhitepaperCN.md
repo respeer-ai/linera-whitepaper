@@ -1,21 +1,21 @@
-## Linera：为高扩展性Web3应用设计的区块链基础设施
+## Linera：高度可扩展 Web3 应用程序的区块链基础设施
 #### 版本2 - 2023年8月16日
 ### 摘要
 
-我们在此推出Linera，一个旨在为服务质量要求较高的Web3应用提供Internet级别的可预测性能、安全性和响应能力的区块链基础设施。为了实现这些目标，Linera引入了一种新的基于弹性验证器的原生多链范式，以解决区块空间稀缺问题。Linera将用户置于协议的中心地位，允许用户控制他们自己的链（称为microchains）上的区块生产，以达到最佳性能。为帮助Web3开发人员充分利用Linera基础设施，我们开发了丰富的、语言无关的的多链编程模型。不同链上的Linera应用使用异步消息通信。同一microchain内，应用程序使用同步调用与临时会话(亦称资源)进行通信。借助于Wasm虚拟机，最初版本的Linera SDK将首先面向Rust程序员。Linera基础设施基于dPoS共识机制（delegated proof of stake）。通过采用最先进的经济激励机制和大规模的社区审计从而实现可靠的去中心化。[[1](<> '免责声明：这份文件及其内容并不构成任何代币的出售要约，也不是购买要约的邀请。我们发布这份白皮书的唯一目的是收集公众的反馈和意见。本文中的任何内容都不应被解读或解释为对 Linera 基础设施或其代币 (如有) 的发展、应用或价值增长做出任何保证或承诺。Linera 仅概述其当前计划，这些计划可能会根据其自由裁量进行更改，最终成功取决于许多超出其控制的因素。此类前瞻性陈述必然涉及已知和未知的风险，这些风险可能导致实际业绩和未来结果与我们在此文件中描述或暗示的发生重大偏离。Linera 没有义务更新其计划。文件中没有任何陈述是保证准确无误的，实际结果和未来事件可能与描述或暗示的内容有重大差异。请不要过度依赖前瞻性陈述。')].
+我们推出 Linera，这是一个旨在为最苛刻的 Web3 应用程序提供互联网级别的可预测性能、安全性和响应速度的区块链基础设施。为此，Linera 通过引入一种基于弹性验证器的新型综合多链范式解决了区块空间稀缺问题。Linera 将用户置于协议的核心位置，允许他们管理自己的链（称为微链）中的区块生成，以实现最佳性能。为了帮助 Web3 开发人员充分利用 Linera 基础设施，我们开发了一个丰富的、与语言无关的多链编程模型。Linera 应用程序使用异步消息跨链通信。在同一个微链中，应用程序使用同步调用和临时会话（又名资源）进行组合。Linera 的初始 SDK 将针对 Rust 程序员，这要归功于 Wasm 虚拟机。Linera 基础设施基于委托权益证明（delegated Proof of Stake），并使用最先进的经济激励措施和社区的大规模审计来确保可靠的去中心化。[[1](<> '法律免责声明：此文档及其内容不构成出售或要约购买任何代币的要约或招揽。我们发布此白皮书只是为了收到公众的反馈和评论。本文件中的任何内容都不应被理解或解释为对 Linera 基础设施或其代币（如果有）将如何发展、被利用或增值做出保证或承诺。Linera 仅概述其当前计划，这些计划可能会自行决定而发生更改，其成功将取决于许多超出其控制范围的因素。此类前瞻性陈述必然涉及已知和未知的风险，这些风险可能导致未来期间的实际绩效和结果与我们在本文档中描述或暗示的内容存在重大差异。Linera 没有义务更新其计划。无法保证文件中任何陈述的准确性，因为实际结果和未来事件可能与我们的描述或暗示存在重大差异。请勿过度依赖前瞻性陈述。')].
 
-## Contents
-1 [**Introduction**](<>)<br>
-&ensp;1.1 [The need for predictable performance and responsiveness in Web3](<>)<br>
-&ensp;1.2 [The blockspace scarcity problem](<>)<br>
-&ensp;1.3 [Shortcomings of existing approaches](<>)<br>
-&ensp;1.4 [Our mission](<>)<br>
-&ensp;1.5 [Overview of the project](<>)<br>
-&ensp;&ensp;1.5.1 [An integrated multi-chain system with elastic validators](<>)<br>
-&ensp;&ensp;1.5.2 [Making multi-chain programming mainstream](<>)<br>
-&ensp;&ensp;1.5.3 [Robust decentralization for elastic validators](<>)<br>
-2 [**The Linera Multi-Chain Protocol**](<>)<br>
-&ensp;2.1 [Participants: users, validators, chain owners](<>)<br>
+## 目录
+1 [**概述**](<>)<br>
+&ensp;1.1 [Web3对可预测性能和响应能力的需求](<>)<br>
+&ensp;1.2 [区块空间稀缺问题](<>)<br>
+&ensp;1.3 [现有方法的不足之处](<>)<br>
+&ensp;1.4 [Linera的使命](<>)<br>
+&ensp;1.5 [Linera项目概述](<>)<br>
+&ensp;&ensp;1.5.1 [基于弹性验证其的集成多链系统](<>)<br>
+&ensp;&ensp;1.5.2 [使多链编程成为主流](<>)<br>
+&ensp;&ensp;1.5.3 [弹性验证器的可靠去中心化](<>)<br>
+2 [**Linera多链协议**](<>)<br>
+&ensp;2.1 [参与者：用户、验证者、链所有者](<>)<br>
 &ensp;2.2 [Security model](<>)<br>
 &ensp;2.3 [Notations](<>)<br>
 &ensp;2.4 [Microchains](<>)<br>
