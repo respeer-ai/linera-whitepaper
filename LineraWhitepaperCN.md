@@ -32,9 +32,9 @@
 &ensp;4.1 [创建应用](<>)<br>
 &ensp;4.2 [多链部署](<>)<br>
 &ensp;4.3 [跨链通信](<>)<br>
-&ensp;4.4 [Local composability](<>)<br>
-&ensp;4.5 [User authentication](<>)<br>
-&ensp;4.6 [Ephemeral chains](<>)<br>
+&ensp;4.4 [局部可组合性](<>)<br>
+&ensp;4.5 [用户认证](<>)<br>
+&ensp;4.6 [临时链](<>)<br>
 5 [**去中心化**](<>)<br>
 &ensp;5.1 [委托权益证明](<>)<br>
 &ensp;5.2 [审计](<>)<br>
@@ -43,14 +43,18 @@ A [**跨链通信**](<>)<br>
 &ensp;A.1 [消息和收件箱](<>)<br>
 &ensp;A.2 [跨链请求和发件箱](<>)<br>
 
-## 1 Introduction
-### 1.1 The need for predictable performance and responsiveness in Web3
+## 1 概述
+### 1.1 Web3对可预测性能和响应能力的需求
 
 <a name='Section1'>Thanks</a> to blockchain technologies, the next iteration of the Internet, Web3, will empower users with a new generation of asset-aware applications and give them more democratic control over the digital economy. However, developing Web3 applications with a great user experience is currently a challenging task. One of the issues is reliability and responsiveness at scale: when too many users are active, blockchains may stop responding or demand punishing fees. In general, application developers want their infrastructure programming interfaces to be easy to use and predictable, disregarding the traffic caused by other applications. Centralized API providers <a href='#References30'>[30]</a> have been proposed to facilitate programming on top of popular blockchains, but such providers need to be trusted and will not improve the performance and the fees of the underlying blockchains. Linera aims to close the gap between centralized and decentralized applications by delivering a blockchain infrastructure that guarantees performance and responsiveness at scale.
 
-### 1.2 The blockspace scarcity problem
+得益于区块链技术的发展，下一代互联网Web3将赋予用户新一代资产感知应用，并使他们在数字经济中拥有更多的民主控制权。然而，开发具有良好用户体验的Web3应用目前是一项具有挑战性的任务。其中一个问题是规模应用的可靠性和响应性：当太多用户活跃时，区块链可能停止响应或要求高昂的费用。总体而言，应用开发者希望他们的基础设施编程接口易于使用且可预测，而不受其他应用程序引起的流量干扰。已经提出了集中式API提供者来简化在流行的区块链上进行编程的过程，但这样的提供者需要被信任，且不能改善底层区块链的性能和费用。Linera的目标是通过提供一种区块链基础设施，以保证规模应用的性能和响应能力，来弥合集中式和去中心化应用之间的差距。
+
+### 1.2 区块空间稀缺问题
 
 The main reason why traditional blockchains have unpredictable worst-case outcomes in terms of fees and delays can be explained as the blockspace scarcity problem. Namely, in a blockchain composed of a single chain of blocks, users must compete to have their transactions selected into the next block. Yet, at the same time, the production rate and the size of blocks are limited by the performance of the consensus protocol, the network, and the execution layer. As a result, during a peak of traffic (say, an NFT airdrop), users may be outpriced by others or be delayed for long periods of time—during which the infrastructure is effectively unavailable to them <a href='#References21'>[21]</a>.
+
+在现有区块链中，交易手续费和延迟的最坏情况是不可预测的， 其主要原因可以解释为区块空间稀缺问题。换句话说，在只包含一条链的区块链中，为使其交易被选择进入下一个区块，发起交易的用户之间需要竞争。然而，与此同时，区块的生产速率和大小受到共识协议、网络和执行层性能的限制。因此，在交易高峰期（例如NFT空投）期间，用户的交易可能因为其他用户的交易手续费出价远远超过其定价范围而失败，或延迟很长时间才能被确认—在此期间，基础设施对他们实际上是不可用的。
 
 ### 1.3 Shortcomings of existing approaches
 
