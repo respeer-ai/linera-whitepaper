@@ -56,9 +56,11 @@ The main reason why traditional blockchains have unpredictable worst-case outcom
 
 在现有区块链中，交易手续费和延迟的最坏情况是不可预测的， 其主要原因可以解释为区块空间稀缺问题。换句话说，在只包含一条链的区块链中，为使其交易被选择进入下一个区块，发起交易的用户之间需要竞争。然而，与此同时，区块的生产速率和大小受到共识协议、网络和执行层性能的限制。因此，在交易高峰期（例如NFT空投）期间，用户的交易可能因为其他用户的交易手续费出价远远超过其定价范围而失败，或延迟很长时间才能被确认—在此期间，基础设施对他们实际上是不可用的。
 
-### 1.3 Shortcomings of existing approaches
+### 1.3 现有方法的不足之处
 
 Unsurprisingly, many blockchain infrastructures have been proposed over the years with scalability improvements in mind. We provide here a high-level summary of the most common approaches, without attempting to be exhaustive.
+
+毫不奇怪，多年来已经提出了许多以提高可扩展性为目标的区块链基础架构。在这里，我们提供对最常见方法的高层次摘要，而不试图详尽无遗。
 
 **Faster single chain.** The production rate of blocks in a single chain is typically limited by the data propagation delay between validators <a href='#References18'>[18]</a>. Historically, block size has been the first parameter to be adjusted to maximize transaction throughput in function of the security requirements and the network constraints [<a href='#References18'>18</a>, <a href='#References20'>20</a>]. Thanks to recent advances in BFT consensus protocols (e.g. <a href='#References22'>[22]</a>), nowadays the new bottleneck for the transaction rate appears to be the sequential execution of transactions rather than consensus ordering.
 
