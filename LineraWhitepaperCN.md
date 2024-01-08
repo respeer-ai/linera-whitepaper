@@ -159,57 +159,121 @@ In general, building a large community of developers is a major factor in the ad
 
 总的来说，在区块链基础设施的采用中，建立一个庞大的开发者社区是一个重要因素。由于Wasm生态系统不断改进其多语言工具，长期来看，Linera有可能服务于多个开发者社区。更详细的Linera编程模型讨论请参见第4节。
 
-#### 1.5.3 Robust decentralization for elastic validators
+#### 1.5.3 Robust decentralization for elastic validators   弹性验证者的稳健去中心化
 
 The classical “blockchain trilemma” <a href='#References10'>[10]</a> asserts the difficulty of simultaneously achieving scalability, security, and decentralization. While this observation certainly holds for validators of fixed capacity, we believe that insufficient efforts have been made in the definition and implementation of a satisfying notion of decentralization for elastic validators.
 
+经典的“区块链三难问题”声称同时实现可扩展性、安全性和去中心化的困难。虽然这一观察在固定容量的验证者方面确实成立，但我们认为对于弹性验证者而言，在定义并实施令人满意的去中心化概念方面付出的努力还不够。
+
 - (**8**) Linera relies on delegated proof of stake (DPoS) for security and supports regularly changing sets of validators. Thanks to the chaining of blocks, the past transactions, the cross-chain messages, and the execution state of each microchain are tamper-resistant.
+
+- Linera依赖委托权益证明（DPoS）来保障安全性，并支持定期更换验证者集合。由于区块的链接，每个微型链的过去交易、跨链消息和执行状态都是防篡改的。
 - (**9**) Microchains are designed to be auditable independently. This means that Linera as a whole will be auditable in a distributed way by the community, using only commodity hardware.
+
+- 微型链被设计为可以独立进行审计。这意味着Linera作为整体将以分布式方式通过社区进行审计，只使用通用硬件。 
 
 Using large validators for performance and maintaining decentralization using communitydriven auditors has been discussed by the blockchain community in the context of rollups <a href='#References10'>[10]</a>. As the Linera project makes progress, we will continue to monitor the technical advances in the field of validity (“ZK”) proofs and chain compression. Decentralization of Linera is further discussed in Section <a href='#Section5'>5</a>.
 
-## 2 The Linera Multi-Chain Protocol
+在满足性能所使用大型验证者的同时，利用社区驱动的审计者维持去中心化已经在Rollup的背景下被区块链社区讨论过。随着Linera项目的进展，我们将继续关注有效性（“ZK”）证明和链压缩领域的技术进步。Linera的去中心化将在第5节进一步讨论。
+
+## 2 The Linera Multi-Chain Protocol   Linera多链协议
 
 <a name='Section2'>We</a> now introduce the multi-chain protocol at the core of the Linera infrastructure. This technical description is meant to illustrate the main ideas of the protocol without being exhaustive. We analyze the protocol informally in Section <a href='#Section3'>3</a> and discuss the programming model in Section <a href='#Section4'>4</a>.
 
-### 2.1 Participants: users, validators, chain owners
+我们现在介绍了Linera基础设施核心的多链协议。这个技术描述旨在阐明协议的主要思想，但并不详尽。我们在第3节非正式地分析该协议，并在第4节讨论编程模型。
+
+### 2.1 Participants: users, validators, chain owners    参与者：用户、验证者、链所有者
 
 The Linera protocol aims to provide a computing infrastructure where developers create decentralized applications and end users interact with them in a secure and efficient way.
 
+Linera协议旨在提供一个计算基础设施，开发者可以创建去中心化应用程序，并且最终用户可以以安全高效的方式与其进行交互。
+
 As usual for blockchain systems, the state of an application in Linera is replicated across several partially-trusted nodes called validators. Modifying the state of an application is done by inserting a transaction into a new block and submitting the new block to the validators.
+
+与区块链系统一样，Linera中应用程序的状态被复制到多个部分可信节点，称为验证者。修改应用程序的状态是通过向新区块插入交易并将新区块提交给验证者来完成的。
 
 To support scalability requirements, Linera is designed from the start as an integrated multi-chain system: instead of using a single chain, transactions are organized in many parallel chains of blocks, called microchains. This means that the state of Linera applications is typically distributed across chains. Importantly, unless a reconfiguration is in progress (Section <a href='#Section2.9'>2.9</a>), a single set of validators is in use for all the microchains.
 
+为了支持可扩展性需求，Linera从一开始就被设计成一个集成的多链系统：不是使用单一链，而是将交易组织在许多并行的区块链中，称为微型链。这意味着Linera应用程序的状态通常分布在各个链上。需要指出的是，除非正在进行重新配置（第2.9节），一组验证者用于所有微型链。
+
 In Linera, the task of extending a chain with new blocks is separate from the task of validating blocks. Proposing blocks is assumed by the owners of a microchain. In practice, the owner(s) of a chain can be any participant to the protocol. Because Linera validators act as a block validation service, chain owners may also be referred to as clients. Examples of chain owners include:
 
+在Linera中，扩展链的任务与验证区块的任务是分开的。提出区块的任务由微型链的所有者承担。实际上，链的所有者可以是协议的任何参与者。因为Linera的验证者充当区块验证服务，链所有者也可以被称为客户端。链所有者的示例包括：
+
 - End users who wish more control over their accounts in different applications;
+
+- 希望在不同应用程序中更好地控制其账户的最终用户；
+- 
 - End users who wish to operate a temporary chain (e.g. for an atomic swap);
+
+- 希望运行临时链（例如用于原子交换）的最终用户；
+- 
 - Developers who wish to publish code or manage applications;
+
+- 希望发布代码或管理应用程序的开发者；
+
 - Validators who collectively run a public chain (e.g. for infrastructure purposes).
+
+- 共同运行公共链的验证者（例如用于基础设施目的）。
 
 The last use case is how Linera manages the current set of validators, also known as the committee. The programming model of Linera is presented in Section <a href='#Section4'>4</a>. The additional role of auditors is discussed in Section <a href='#Section5'>5</a>.
 
-### 2.2 Security model
+最后一个用例是Linera如何管理当前一组验证者，也称为委员会。Linera的编程模型见第4节。审计员的额外角色在第5节中进行了讨论。
+
+### 2.2 Security model  安全模型
 
 <a name='Section2.2'>Linera</a> is designed to be Byzantine-Fault Tolerant (BFT) <a href='#References13'>[13]</a>. All participants generate a key pair consisting of a private signature key and the corresponding public verification key. Linera uses a delegated proof of stake (DPoS) model <a href='#References28'>[28]</a>, where the voting power of each validator is bound to its stake and the stake delegated to it by users.
 
+Linera被设计成具有拜占庭容错（BFT）特性。所有参与者生成包含私人签名密钥和相应的公共验证密钥的密钥对。Linera使用委托权益证明（DPoS）模型，其中每个验证者的投票权与其持股数量以及用户委托给它的持股数量相关联。
+
 **Assumptions.** We present the Linera protocol for a total voting power of *N*. A fixed, unknown subset of *Byzantine* (aka *dishonest*) validators may deviate from the protocol. It is assumed that they control at most *f* voting power for some value *f* such that 0 ≤ *f* < $\frac{ N }{ 3 }$. This is similar to many BFT protocols [<a href='#References7'>7</a>, <a href='#References13'>13</a>]. In practice, one chooses the largest possible value for *f*, namely *f* = $\lfloor \frac{ N - 1 }{ 3 } \rfloor$.
+
+假设。我们为N的总投票权力提出了Linera协议。一个固定的、未知的子集拜占庭（也称为不诚实的）验证者可能会偏离协议。假设他们最多控制f的投票权，其中f的取值范围为0 ≤ f < n/3。这类似于许多BFT协议。在实践中，人们通常选择最大可能的f值，即f = n/3。
 
 We do not make any assumptions about users, chain owners, or on the networking layer when it comes to safety properties. Unless specified otherwise, liveness properties do not depend on network delays or message ordering. In other words, the network is *asynchronous* <a href='#References13'>[13]</a>.
 
+在安全性属性方面，我们不对用户、链所有者或网络层做任何假设。除非另有说明，活跃性属性不依赖于网络延迟或消息顺序。换句话说，网络是异步的。
+
 We use the word *quorum* to refer to a set of signatures issued by validators with a combined voting power of at least *N − f*. An important property of quorums, called quorum *intersection*, is that for any two quorums, there exists an honest validator *α* that is present in both. When data (typically a block) is signed by a quorum of validators, it is said to be *certified*. Certified data is also called a *certificate* for short.
 
+我们使用术语“法定人数”来指代由投票权合计至少为N − f的验证者签名组成的一组签名。法定人数的一个重要特性，称为法定人数交集，是对于任意两个法定人数，都存在一个诚实的验证者α同时存在于两个法定人数中。当数据（通常是一个区块）由法定人数的验证者签名时，称之为已认证。已认证的数据也被简称为证书。
+
 **Goals.** Linera aims to guarantee the following security properties:
+
+目标。Linera旨在保证以下安全属性：
+
 - *Safety:* For any microchain, every validator sees (a prefix of) the same chain of blocks, therefore it applies the same sequence of modifications to the execution state of the chain and eventually delivers the same set of messages to the other chains.
+
+- 安全性：对于任何微型链，每个验证者看到（一个前缀）相同的区块链，因此它对链的执行状态应用相同的修改序列，并最终向其他链交付相同的消息集。
+- 
 - *Eventual consistency of chains:* If a microchain is extended with a new certified block on an honest validator, any user can take a series of steps to ensure that this block is added to the chain on every honest validator.
+
+- 链的最终一致性：如果微型链在一个诚实的验证者上扩展了一个新的已认证区块，任何用户都可以采取一系列步骤来确保该区块被添加到每个诚实验证者的链上。
+- 
 - *Eventual consistency of asynchronous messages:* If a microchain receives a cross-chain message on an honest validator, any user can take a series of steps to ensure that this message is received by the chain on every honest validator.
+
+- 异步消息的最终一致性：如果微型链在一个诚实的验证者上收到了跨链消息，任何用户都可以采取一系列步骤来确保该消息被每个诚实验证者的链接收到。
+- 
 - *Authenticity:* Only the owner(s) of a microchain can extend their microchain.
+
+- 真实性：只有微型链的所有者才能扩展他们的微型链。
+- 
 - *Piecewise Auditability:* There is sufficient public cryptographic evidence for the state of Linera to be audited for correctness in a distributed way, one chain at a time.
+
+- 分段可审计性：Linera的状态有足够的公共加密证据，使得可以逐个链以分布式方式对其正确性进行审计。
 
 For single-owner chains (Section <a href='#Section2.4'>2.4</a>), Linera also guarantees the following properties:
 
+对于单所有者链（第2.4节），Linera还保证以下属性：
+
 - *Monotonic block validation:* In a single-owner chain, if a block proposal is the first one to be signed by the owner at a given block height and it is accepted by an honest validator, then with appropriate actions, the chain owner always eventually succeeds in gathering enough votes to produce a certificate.
+
+- 单调的区块验证：在单所有者链中，如果一个区块提议是在给定区块高度上所有者签名的第一个区块提议，并且它被一个诚实的验证者接受，那么通过适当的操作，链所有者最终总能成功地收集足够的投票来生成一个证书。
+- 
 - *Worst-case Efficiency:* In a single-owner chain, Byzantine validators cannot significantly delay block proposals and block confirmations by correct users.
+
+- 最坏情况下的效率：在单所有者链中，拜占庭验证者不能显著延迟正确用户的区块提议和区块确认。
+- 
 
 ### 2.3 Notations
 
