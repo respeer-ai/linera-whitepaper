@@ -275,177 +275,323 @@ For single-owner chains (Section <a href='#Section2.4'>2.4</a>), Linera also gua
 - 最坏情况下的效率：在单所有者链中，拜占庭验证者不能显著延迟正确用户的区块提议和区块确认。
 - 
 
-### 2.3 Notations
+### 2.3 Notations   符号
 
 We assume a collision-resistant hash function, noted **hash**(·), as well as a secure public-key signature scheme **sign**[.]. A quorum of signatures on a block *B* forms a certificate noted *C* = **cert**[*B*]. In the rest of this report, we identify certificates on the same block *B* and simply write *C* = **cert**[*B*] when *C* is any certificate on *B*.
 
+我们假设存在一个抗碰撞哈希函数，记为 hash(·)，以及一个安全的公钥签名方案 sign[.]。对于区块 B 上的一组签名，形成一个被标记为 C = cert[B] 的证书。在本报告的其余部分，我们将会识别同一区块 B 上的证书，并简单地写作 C = cert[B]，其中 C 是该区块上的任意证书。
+
 The state of the Linera system is replicated across all validators. For a given validator, noted *α*, we use the notation *X*(*α*) to denote the current view of *α* regarding some replicated data *X*. A *data type D* = $\left \langle Tag, arg_1, . . . , arg_n \right \rangle$ is a sequence of values starting with a distinct marker **Tag** and meant to be sent over the network. We use capitalized names to distinguish data type markers from mathematical functions (e.g. **hash**) or data fields (e.g. **owner**$^{id}$(*α*)), and simply write **Tag**$(arg_1, . . . , arg_n)$ for a data type. We write $\widetilde{D}$ for a sequence of data types $(D_1, . . . D_n)$.
 
-### 2.4 Microchains
+Linera 系统的状态被复制到所有验证者中。对于给定的验证者，记为 α，我们使用符号 X(α) 来表示关于某个复制数据 X 的验证者 α 的当前视图。数据类型 D = $\left \langle Tag, arg_1, . . . , arg_n \right \rangle$ 是一系列以独特标记 Tag 开头的值，并打算发送到网络上。我们使用大写名称来区分数据类型标记和数学函数（例如 hash）或数据字段（例如 owner(α)），并简单地写作**Tag**$(arg_1, . . . , arg_n)$ 表示一个数据类型。我们将 写作 $\widetilde{D}$ 表示一系列数据类型 $(D_1, . . . D_n)$。
+
+### 2.4 Microchains   微块链
 
 <a name='Section2.4'>The</a> main building blocks of the Linera infrastructure are its microchains. A microchain (or simply *chain* for short) is similar to a regular blockchain in the sense that it is made of a chain of blocks, each containing a sequence of transactions. Importantly, Linera separates the role of proposing new blocks (chain owners’ role) from validating them (validators’ role). The protocol to extend a chain is configurable and depends on the *type* of the chain.
 
+Linera 基础架构的主要构建模块是其微块链。微块链（简称为链）类似于常规区块链，由一系列包含交易序列的区块组成。重要的是，Linera 将提出新区块（链所有者的角色）与验证新区块（验证者的角色）的职责分开。扩展链的协议是可配置的，并取决于链的类型。
+
 **Chain identifiers.** A microchain is represented by an identifier *id* designed to be nonreplayable. Specifically, a *unique identifier* (or simply *identifier* ) is a non-empty sequence of numbers written as *id* = [ $n_1$, . . . , $n_k$] for some 1 ≤ *k* ≤ $k_{max}$. We use :: to denote the concatenation of one number at the end of a sequence: [ $n_1$, . . . , $n_{k+1}$] = [ $n_1$, . . . , $n_k$] :: $n_{k+1}$ (*k* < $k_{MAX}$). In this example, we say that *id* = [ $n_1$, . . . , $n_k$] is the *parent* of id :: $n_{k+1}$.
+
+链标识符。微块链通过一个被设计为不可重放的标识符 id 来表示。具体来说，唯一标识符（或者简称标识符）是一串非空数字序列，写作id = [n1, . . . , nk]，其中 1 ≤ k ≤ n。我们使用 :: 表示将一个数字连接到序列的末尾：[n1, . . . , nk] = [n1, . . . , nk-1] :: nk（k < n）。在这个例子中，我们说 id = [n1, . . . , nk] 是 id :: nk 的父标识符。
 
 A Linera system starts with a fixed set of microchains defined in the genesis configuration. To create a new chain, the owner of an existing chain must execute a chain-creation transaction. The new identifier is computed as the concatenation of the parent identifier and the index of the transaction creating the new chain.
 
+Linera 系统从初始定义的基因配置中开始，其中包括了一组固定的微块链。要创建新的链，现有链的所有者必须执行一个创建链的交易。新标识符是通过将父标识符和创建新链的交易索引连接而得到的。
+
 **Chain types.** Linera supports three types of microchains:
 
+链类型。Linera 支持三种类型的微块链：
+
 - (**i**) *Single-owner chains* where only one user (as identified by its public key) is authorized to propose blocks;
+- （i）单所有者链，只有一个用户（由其公钥标识）被授权提出区块；
 - (**ii**) *Permissioned chains* where only a well-defined set of cooperating users are authorized to propose blocks;
+- （ii）允许链，只有一个明确定义的合作用户集被授权提出区块；
 - (**iii**) *Public chains* where validators propose blocks.
+- （iii）公共链，验证者提出区块。
 
 In all three cases, the agreement between validators regarding the next block *B* of a chain is represented in fine by a certificate *C* = **cert**[*B*]. In the case of a single-owner chain, the production of the certificate *C* is inspired by reliable broadcast [7,12] and will be described in detail in Section <a href='#Section2.8'>2.8</a>. In the case of public chains, the certificate *C* is a proof of commit produced by a classical BFT consensus protocol between validators. The case of permissioned chains and public chains is sketched in Section <a href='#Section2.9'>2.9</a>. For simplicity, unless mentioned otherwise, the rest of this report focuses on single-owner chains.
 
+在这三种情况下，验证者对于链的下一个区块 B 的达成一致由证书 C = cert[B] 来表示。在单所有者链的情况下，证书 C 的生成受可靠广播的启发，并将在第 2.8 节中详细描述。在公共链的情况下，证书 C 是由验证者之间的经典 BFT 共识协议生成的提交证明。权限链和公共链的情况将在第 2.9 节中概述。为简单起见，除非另有说明，本报告的其余部分将重点放在单所有者链上。
+
 Every chain includes a field **owner**$^{id}$(*α*) to authenticate their *owner(s)*, if any. We write **owner**$^{id}$(*α*) = *pk* when the chain has a single owner authenticated by the public-key *pk*. Permissioned chains have **owner**$^{id}$(*α*) = { ${pk}_1$, . . . , ${pk}_n$} and public chains **owner**$^{id}$(*α*) = &#x2605;. When **owner**$^{id}$(*α*) = ⊥, the chain is said to be *inactive*.
+
+每个链都包括一个字段 owner(α) 用于验证其所有者，如果有的话。当链由公钥 pk 验证的单一所有者时，我们写作 owner(α) = pk。权限链的 owner(α) = {n1, . . . , nk}，公共链的 owner(α) = ★。当 owner(α) = ⊥ 时，表示该链处于非活跃状态。
 
 **Chain lifecycle.** Any existing chain can create a new microchain for another user and use the block certificate *C* as a proof of creation. Once created, the new microchain works independent from its parent microchain. Linera will make available a dedicated public chain to allow new users to easily create their first chain.
 
+链的生命周期。任何现有的链都可以为另一个用户创建一个新的微块链，并使用区块证书 C 作为创建的证明。一旦创建，新的微块链将独立于其父级微块链运行。Linera 将提供一个专门的公共链，以便新用户可以轻松地创建他们的第一个链。
+
 Linera also makes it possible to safely and verifiably transfer the control of a chain to another user by executing a transaction that changes the key **owner**$^{id}$(*α*). Setting **owner**$^{id}$(*α*) = ⊥ effectively deactivates the chain permanently.
+
+Linera 还可以通过执行更改 owner(α) 的交易，将链的控制安全可靠地转移给另一个用户。将 owner(α) = ⊥ 设置为有效地永久停用该链。
 
 Using unique identifiers is important so that the state of a deactivated microchain can be safely deleted and archived in cold storage while preventing the chain of blocks from being replayed.
 
+使用唯一标识符是很重要的，这样在停用微块链的情况下，可以安全地删除并存档在冷库中，同时防止区块链被重放。
+
 **Blocks.** A *block* is a data type *B* = **Block**(*id*, *n*, *h*, $\widetilde{T}$) made of the following data:
+
+区块。一个区块是由以下数据组成的数据类型 B = Block(id, n, h, T):
 - the unique identifier of the chain to extend *id*,
+- 要扩展的链的唯一标识符 id,
 - a block height *n* ≥ 0,
+- 区块高度 n ≥ 0,
 - the hash *h* of the previous block (or ⊥ if *n* = 0),
+- 上一个区块的哈希 h（如果 n = 0，则为 ⊥）,
 - a sequence of *transactions* $\widetilde{T}$.
+- 一系列交易 T.
 
 A transaction *T* is an instruction meant to be executed on a chain. Transactions are typically used to modify the *execution state* of the chain. In Linera, they may also have additional effects such as creating chains, sending messages to a *recipient* chain ${id}'$, or receiving messages.
 
+交易 T 是指在链上执行的指令。交易通常用于修改链的执行状态。在 Linera 中，它们也可能具有额外的效果，比如创建链、向接收链发送消息，或者接收消息。
+
 A microchain *id* with a current chain of blocks ⊥ → $B_0$ → . . . → $B_n$ is successfully extended by block *B* when validators receive a certified request *C* = **cert**[*B*] that contains id and the next expected block height *n* + 1. Validators track the current state of each chain *id* and only vote in favor of adding a block *B* after validating the correct chaining and the correct execution of *B*. Under BFT assumption, this ensures that validators eventually execute the same sequence of blocks on each chain, therefore agree on the execution state.
+
+当验证者收到一个包含 id 和下一个预期区块高度 n + 1 的认证请求 C = cert[B] 时，微块链 id 的当前区块链 ⊥ → → . . . → 成功地被区块 B 扩展。验证者跟踪每个链 id 的当前状态，并只在验证正确的链接和正确执行 B 后投票赞成添加一个区块 B。根据 BFT 假设，这确保了验证者最终在每个链上执行相同的区块序列，因此对执行状态达成一致。
 
 The execution of a block *B* consists in interpreting the transactions $\widetilde{T}$ listed in *B* in the given order. Transactions may produce outgoing messages for other chains and consume incoming messages. In practice, for auditing purposes, blocks *B* also include the hash of the state after executing the block, as well as the outgoing messages produced by transactions.
 
-### 2.5 Cross-chain requests
+区块 B 的执行包括按照给定顺序解释 B 中列出的交易。交易可能会为其他链产生输出消息并消费输入消息。在实践中，出于审计目的，区块 B 还包括执行该区块后的状态哈希值，以及交易产生的输出消息。
+
+### 2.5 Cross-chain requests   跨链请求
 
 <a name='Section2.5'>The</a> state of a Linera application is usually distributed across many chains for scalability. To coordinate across chains, applications rely on asynchronous communication (see also Section <a href='#Section4.3'>4.3</a> on programmability).
 
+Linera 应用程序的状态通常为了可扩展性分布在许多链上。为了跨链协调，应用程序依赖于异步通信（也请参阅第 4.3 节的可编程性）。
+
 At the protocol level, asynchronous communication between chains relies on an important mechanism called *cross-chain requests*. Concretely, the execution of a transaction in a block on a chain *id* by a validator *α* may sometimes trigger a one-time, asynchronous interaction that will modify the state of another chain $id'$. (See Algorithm 1 for an example of pseudo-code with cross-chain requests.) Cross-chain requests are cheaply implemented using remote procedure calls (RPCs) in the internal network of each validator: the implementation needs only ensure that each request is executed exactly once.
+
+在协议级别，链与链之间的异步通信依赖于一个重要的机制，称为跨链请求。具体来说，验证者 α 在链 id 上对区块中的交易进行执行时，有时可能会触发一次性的异步交互，这将修改另一个链的状态。（有关使用跨链请求的伪代码示例，请参见算法 1。）跨链请求通过在每个验证者的内部网络中使用远程过程调用（RPC）来便宜实现：实现只需要确保每个请求被执行一次。
 
 Importantly, arbitrarily modifying the execution state of a target chain with a crosschain request is not possible in general because validators do not agree on the order of execution of cross-chain requests—in other words, this would break the *Safety* property. While FastPay <a href='#References7'>[7]</a> uses cross-chain requests for payments only, Linera uses this mechanism to create new chains and to deliver messages to the *inbox* of an existing chain.
 
+重要的是，一般情况下不能通过跨链请求任意修改目标链的执行状态，因为验证者不会就跨链请求的执行顺序达成一致——换句话说，这将破坏安全性属性。虽然 FastPay [7] 只用于支付的跨链请求，但 Linera 使用这种机制来创建新链并向现有链的收件箱投递消息。
+
 Inboxes allow Linera to support arbitrary messages because the modification is not applied to the target chain immediately. Rather, the message is placed in the target chain’s inbox, implemented as a commutative data structure (*i.e.* where the order of insertions does not matter) described in Section <a href='#Section2.6'>2.6</a>. The owner(s) of the receiving chain then executes a transaction that picks the message from the inbox and applies its effect to the chain state (Section <a href='#Section2.7'>2.7</a>).
 
-### 2.6 Chain states
+收件箱允许 Linera 支持任意消息，因为修改不会立即应用到目标链上。相反，该消息被放置在目标链的收件箱中，这里实现为一个可交换的数据结构（即插入顺序无关），详见第 2.6 节。接收链的所有者随后执行一个从收件箱中提取消息并将其效果应用到链状态的交易（第 2.7 节）。
+
+### 2.6 Chain states  链状态
 
 <a name='Section2.6'>We</a> now describe the state of the Linera chains as seen by validators and clients. Every validator stores a map that contains the states of all the chains, indexed by their identifiers. Clients have a similar representation of the chains except that they act as a *full-node* (*i.e.* track the chain of blocks and execution state) only for a small subset of the chains relevant to them. Next, we focus on the state of a given validator, noted *α*.
 
+我们现在描述 Linera 链的状态，这是验证者和客户端所看到的。每个验证者都存储一个包含所有链状态的映射表，通过它们的标识进行索引。客户端也有类似的链表示，只不过它们只对与自身相关的一小部分链 acting as a full-node（即跟踪链的区块和执行状态） 。接下来，我们将重点放在给定验证者α的状态上。
+
 **Chain state.** The state of a chain *id* as seen by a validator *α* can be divided into (i) a *consistent part* which is a deterministic function of the chain of blocks ⊥ → $B_0$ → . . . → $B_n$ already executed by *α*; and (ii) a *localized* part on which validators may not agree. The consistent part of a chain state includes the following data:
 
+链状态。验证者 α 所看到的链 id 的状态可以分为两部分：(i) 一个一致的部分，它是验证者α已经执行的链的区块 ⊥ → → . . . → 的确定性函数；(ii) 另一部分是本地化的部分，验证者可能在这部分上达不成一致。链状态的一致部分包括以下数据：
+
 - A field **owner**$^{id}$(*α*) controlling the production of blocks in *id*, as seen before.
+- 一个字段 owner(α) 控制着 id 链中区块的生成，如前所述。
 - An integer value, written **next-height**$^{id}$(*α*), tracking the expected block height for the next block of *id*. (Here $n + 1$. Initially 0.)
+- 一个整数值，记为 next-height(α)，用来追踪 id 链下一个区块的预期高度。（初始为0）
 - The hash of the previous block **block-hash**$^{id}$(α) (initially ⊥.)
+- 上一个区块的哈希值 block-hash(α)（初始为 ⊥）。
 - The execution state, noted **state**$^{id}$(*α*).
+- 执行状态，记为 state(α)。
 
 The localized part of a chain state includes the following:
 
+链状态的本地化部分包括以下内容：
+
 - **pending**$^{id}$(*α*), an optional value indicating that a block on *id* is pending confirmation (the initial value being ⊥).
+- pending(α)，一个可选值，指示 id 上的一个区块正在等待确认（初始值为 ⊥）。
 - A list of certificates, written **received**$^{id}$(*α*), tracking all the certificates that have been confirmed by *α* and involving *id* as a recipient chain.
+- 一份证书列表，记为 received(α)，跟踪所有已被验证者 α 确认的并且涉及 id 作为接收链的证书。
 - A data-structure called an *inbox* and denoted by **inbox**$^{id}$(*α*) (see next paragraph).
+- 一个名为收件箱的数据结构，记为 inbox(α)（见下一段）。
 
 The field **pending**$^{id}$(*α*) is specific to single-owner chains and explained in Section <a href='#Section2.8'>2.8</a>. It is completed by additional data in the case of permissioned and public chains. The list of certificates **received**$^{id}$(*α*) is crucial for liveness (Section <a href='#Section3.3'>3.3</a>).
 
+字段 pending(α) 是针对单所有者链的，并在第2.8节中进行了解释。在权限链和公共链的情况下，会补充额外的数据。而 received(α) 证书列表对于活跃性（第3.3节）至关重要。
+
 **Inbox state.** An inbox $I = {inbox}^{id}(α)$ is a special data structure used to track the crosschain messages received by *id* and waiting to be consumed by a transaction. Specifically, messages are *added* to an inbox upon reception and *removed* from it after being executed by the receiving chain.
+
+收件箱状态。收件箱是一种特殊的数据结构，用于跟踪 id 接收到的跨链消息，并等待被交易消耗。具体来说，消息在接收后被添加到收件箱中，在被接收链执行后从中移除。
 
 
 An important property of an inbox is that adding or consuming distinct messages is commutative. In the simplest implementation, one can think of an inbox as two disjoint sets of messages $I = (I_+, I_−)$. We may define the addition of a message *m* to *I*, noted $I + m$, as $(I_+ ∪$ {m}, $I_−)$ if $m \notin I_−$ and $(I_+, I_−$\\{m}) otherwise. Similarly, the subtraction $I − m$ is $(I_+, I_− ∪$ {m}) if $m \notin I_+$ and $(I_+$\\{m}, $I_−)$ otherwise. In this setting, when ${inbox}^{id}(α) = (I_+, I_−)$, the set $I_+$ represents the messages m that have been received by *id* and are waiting to be executed in a next block; $I_−$ tracks the messages that have not been received by *id* yet (from the point of view of *α*) but were nonetheless executed by anticipation because of a certified block. In this simplified presentation, we are assuming that messages are never replayed identically, say, because they include a counter for each pair of sender and receiver $(id, id')$.
 
+收件箱的一个重要性质是，添加或消耗不同消息是可交换的。在最简单的实现中，可以将收件箱看作两个不相交的消息集合。我们可以定义将消息 m 添加到 I（记为 ）的操作为 {m}，如果 m 不在 I 中，则为 {m}；类似地，将消息 m 从 I 中移除（记为 ）的操作为 {m}，如果 m 在 I 中，则为 {m}。在这种情况下，当为时，集合 表示已被 id 接收并等待在下一个区块中执行的消息 m；表示尚未被 id 接收（从验证者 α 的角度来看），但由于认证区块的预期执行而提前执行的消息。在这个简化的描述中，我们假设消息永远不会完全重放，比如因为它们包含了每对发送方和接收方的计数器。
+
 The current implementation of Linera uses a more complex data structure enforcing an ordered delivery of messages for each pair of sender and receiver, and for each application. See Appendix A.1 for a detailed description. For simplicity, in what follows, we still use the notation ${inbox}^{id}_−$ to denote the equivalent of the set $I_−$ above, representing the executed messages waiting to be received by the chain *id* at a given moment.
 
-### 2.7 Block execution
+Linera 当前的实现使用了一种更复杂的数据结构，对于每对发送方和接收方以及每个应用程序都强制执行消息的有序传递。详细描述请参见附录 A.1。为简单起见，在接下来的内容中，我们仍然使用符号 来表示上述集合的等价物，表示已执行的消息，正在等待在某一特定时刻被链 id 接收。
+
+### 2.7 Block execution    区块执行
 
 <a name='Section2.7'>We</a> now describe how to execute the sequence of transactions contained in a chain of blocks. The transactions *T* supported by a Linera deployment include the following commands:
+我们现在描述如何执行包含在区块链中的交易序列。Linera 部署支持的交易 T 包括以下命令：
 
 - $OpenChain(id', pk')$ to activate a new chain with a fresh identifier $id'$ and public key $pk'$—possibly on behalf of another user who owns $pk'$;
+- $OpenChain(id', pk')$ 激活一个带有新标识符$id'$和公钥的新链  $pk'$ —— 可能代表另一个拥有者 $pk'$；
 - $ChangeKey(pk')$ to transfer the ownership of a chain;
+- $ChangeKey(pk')$转移链的所有权；
 - $CloseChain$ to deactivate the chain *id*;
+- $CloseChain$停用链 *id*；
 - $Execute(o)$ to execute a *user operation o*;
+- $Execute(o)$执行*user operation o*；
 - $Receive(m)$ to pick a *cross-chain message m* from the chain inbox and execute it.
+- $Receive(m)$从链收件箱中提取一条跨链消息 m 并执行它。
 
 The first three types of transactions are examples of *system operations* that are predefined in the protocol. In constrast, user operations *o* are executed by user-defined applications (aka “smart contracts”). At a high level, operations are meant to be freely added by the producer of a block, whereas receiving a cross-chain message requires the message to be first sent by another transaction of another chain (2.5).
 
+前三种类型的交易是预先在协议中定义的系统操作的示例。相反，用户操作 o 是由用户定义的应用程序（也称为“智能合约”）执行的。在高层次上，操作应该可以自由地被区块的生成者添加，而接收跨链消息则要求该消息首先通过另一个链的另一个交易发送出去（2.5 节）。
+
 For simplicity, we have omitted transaction fees and additional logic required by multiowner chains and reconfigurations (Section <a href='#Section2.9'>2.9</a>). Formally, to execute user operations o, we assume a method $ExecuteOperation(id, o)$ that attempts to modify ${state}^{id}$ and may return either ⊥ or $(m, id')$ in case of success, the latter case being a request that a message *m* be sent to the chain $id'$. We also assume a method to modify ${state}^{id}$ by executing a crosschain message *m*, noted $ExecuteMessage(id, m)$. Importantly, receiving a message m may produce another message $m'$ in return.
+
+为简单起见，我们省略了多所有者链和重新配置所需的交易费用和额外逻辑（2.9 节）。正式地说，为了执行用户操作 o，我们假设有一个方法 ，它试图修改 并可能返回 ⊥ 或 在成功的情况下，后者是请求将一条消息 m 发送到链 的情况。我们还假设有一个方法通过执行跨链消息 m 来修改 ，记为 。重要的是，接收消息 m 可能会产生另一条消息 作为回应。
 
 This description translates to the pseudo-code in Algorithm 1. The execution of a block $B = Block(id, n, h, \widetilde{T})$ as suggested above corresponds to the function ExecuteBlock. The validation of blocks by the function BlockIsValid is similar to ExecuteBlock except that no change to the state is persisted, cross-chain queries are ignored, and messages cannot be executed by anticipation, that is, the validation fails if ${inbox}^{id}_-$ is not empty at the end of the call.
 
-### 2.8 Client/validator interactions
+这个描述对应于算法1中的伪代码。如上所建议的区块 的执行对应于函数 ExecuteBlock。通过函数 BlockIsValid 对区块进行验证类似于 ExecuteBlock，只是不会将状态持久化，跨链查询会被忽略，并且消息不能通过预期执行，也就是说，如果 在调用结束时不为空，验证将失败。
+
+### 2.8 Client/validator interactions    客户端/验证者交互
 
 <a name='Section2.8'>We</a> can now describe the interactions between clients (aka chain owners) and validators in a Linera system. Clients to the Linera protocol run a local node, noted β, that tracks a small subset of chains relevant to them. These relevant chains typically include the ones owned by the client as well as direct dependencies, notably a special Admin chain in charge of tracking validators and their networking addresses (Section <a href='#Section2.9'>2.9</a>).
 
+我们现在可以描述在 Linera 系统中客户端（又称链所有者）与验证者之间的交互。遵循 Linera 协议的客户端运行一个本地节点，记为 β，用来跟踪与其相关的一小部分链。这些相关的链通常包括客户端拥有的链以及直接依赖项，特别是负责跟踪验证者和它们的网络地址的特殊 Admin 链（2.9 节）。
+
 Network interactions with validators are always initiated by a client. Clients may wish to either (i) extend one of their own chain(s) with a new block, or (ii) provide a *lagging* validator with the certificates that it is missing in a chain of interest to the client.
+
+客户端始终会主动发起与验证者的网络交互。客户端可能希望要么（i）通过一个新区块扩展自己的链，要么（ii）向滞后的验证者提供其在客户端感兴趣的链中缺失的证书。
 
 To support these two use cases, validators provide two service handlers described in Algorithm 2 and called HandleRequest and HandleCertificate. For simplicity, we omit the service handlers used by clients to query the state of a chain or to download a chain of blocks from a validator.
 
+为了支持这两种用例，验证者提供了两个服务处理程序，在算法2中进行了描述，分别被称为 HandleRequest 和 HandleCertificate。为简单起见，我们省略了客户端用于查询链状态或从验证者下载区块链的服务处理程序。
+
 We start with the interactions meant to update a lagging validator.
+
+我们首先讨论更新滞后验证者的交互。
 
 **Uploading missing certificates to a validator.** Any client may upload a new certificate $C = cert[B]$ with $B = Block(id, n, h, \widetilde{T})$ to a validator *α* using the HandleCertificate entry point, provided that the chain *id* is active and that *n* is the next expected block height from the point of view of *α (*i.e.* formally ${owner}^{id}(α) \not= ⊥$ and **next-height**$^{id}(α) = n$).
 
+任何客户端都可以使用 HandleCertificate 入口点将一个新的证书 c 上传到验证者 α，前提是链 id 处于活跃状态，并且从验证者 α 的角度看，n 是下一个预期的区块高度（即形式上为 n = next-height(α)）。
+
 If the validator *α* has not created the chain *id* yet or if it is lagging by more than one block, concretely the client should upload a sequence of multiple missing certificates ending with $C = cert[B]$. If necessary, the sequence may start with blocks of an *ancestor* chain $id'$ (that is, $id' = parent(parent(. . . id)))$. In this case, the sequence continues until the block of the parent chain that created the chain id is reached, then finishes with the chain of blocks ending with *C*.
+
+如果验证者 α 尚未创建链 id，或者滞后超过一个区块，具体来说，客户端应该上传一系列多个缺失的证书，以 结尾。如有必要，这个序列可以以祖先链的区块开始（即 ）。在这种情况下，序列会持续直到达到创建了链 id 的父链的区块，然后以包含证书 C 结尾的区块链结束。
 
 In practice, the need to upload such a sequence of certificates justifies that the local node *β* may track the chain *id* in the first place. The client can quickly find the exact block that created *id* by looking at the first block logged in the list ${received}^{id}(β)$.
 
+实际上，需要上传这样一个证书序列的情况证明了本地节点 β 首先需要跟踪链 id。客户端可以通过查看列表 中记录的第一个区块来快速找到创建 id 的确切区块。
+
 **Extending a single-owner chain.** In the common scenario where validators are sufficiently up-to-date, Linera clients may extend their chain with a new block *B* using a variant of reliable broadcast [<a href='#References7'>7</a>, <a href='#References12'>12</a>] illustrated in Figure 1 and going as follows.
 
+扩展单所有者链。在验证者足够及时的常见情况下，Linera 客户端可以使用可靠广播的一种变体来添加一个新区块 B，这在图1中进行了说明，步骤如下。
+
 - The client broadcasts the block *B* authenticated by its signature to each validator using the HandleRequest entry point $α(&#x2460;)$ and waits for a quorum of responses.
+- 客户端使用其签名对区块 B 进行广播，并通过 HandleRequest 入口点 ① 将其发送给每个验证者，并等待获得一定数量的回应。
 - A validator responds to a *valid* request $R = auth[B]$ of the expected height by sending back a signature on *B*, called a *vote*, as acknowledgment (&#x2462;). After receiving votes from a quorum of validators, a client forms a certificate $C = cert[B]$.
+- 验证者对预期高度的有效请求 ② 做出响应，回复一个对 B 的签名，称为投票，作为确认（③）。
 - When a certificate $C = cert[B]$ with the expected next block height is uploaded (&#x2463;), this triggers the one-time execution of the block *B* (&#x2464;).
+- 在获得来自一定数量的验证者的投票后，客户端形成证书 ④。当上传带有预期下一个区块高度的证书 ④ 时，这将触发对区块 B 的一次性执行 ⑤。
 
 A synchronization step is occasionally needed first (&#x24EA;) if some validator *α* is unable to vote right away for an otherwise-valid proposal $B = Block(id, n, h, \widetilde{T})$. This may happen for two reasons:
+
+有时候首先需要进行同步步骤（⓪），如果某个验证者 α 无法立即对一个否则有效的提案 进行投票。这可能出现两种情况：
 
 ![image](https://github.com/kikakkz/linera-whitepaper/assets/13128505/46ef58c9-a9f0-40b7-ac8e-bfe704e36699)
 
 - 1. either the chain *id* is not active yet or *α* is missing earlier blocks (*i.e.* formally ${owner}^{id}(α) = ⊥$ or **next-height**$^{id}(α) < n$);
+  2. 要么链 id 尚未激活，要么 α 缺少较早的区块（即形式上为 next-block(α) < next-height(α)）。
 - 2. *α* is missing cross-chain messages, that is: $I_− = {inbox}^{id}$ is not empty at the end of the staged execution of $\widetilde{T}$.
+  3. α 缺少跨链消息，即在 对 staged 执行结束时不为空。
 
 In the first case, the Linera client must upload missing certificates in the chain *id* (and possibly its ancestors) as described in the previous paragraph, until **next-height**$^{id}$(α) = n. In the second case, the client must upload missing certificates in the chains that have sent the messages $m ∈ I_−$ to *id*. When *B* has been correctly constructed (*i.e.* is not trying to receive messages that were never sent), the set $I_−$ is necessarily covered by the certificates listed in the union $\cup_α' {received}^{id}(α')$ where $α'$ ranges over any quorum of validators.
 
+在第一种情况下，Linera 客户端必须根据前面的段落所述，在链 id（及可能其祖先）中上传缺失的证书，直到 next-height(α) = n。在第二种情况下，客户端必须上传发送消息 到 id 的链中缺失的证书。当 B 被正确构建时（即没有尝试接收从未发送的消息），集合 是由列在任何验证者的任意仲裁联盟的证书的并集 并且范围涵盖。
+
 Importantly, uploading a missing block to a validator benefits all clients. To maximize liveness and decrease the latency of their future transactions, in practice, it is expected that users proactively update all the validators when it comes to their own chains, therefore minimizing the need for synchronization by other clients. However, the possibility of synchronization by everyone is important for liveness (Section <a href='#Section3.3'>3.3</a>). It also allows a certificate to act as a proof of finality for the certified block.
+
+重要的是，向验证者上传缺失的区块对所有客户端都有好处。为了最大限度地提高活跃性并减少未来交易的延迟，在实践中，预计用户会在涉及自己链的情况下主动更新所有验证者，从而最大程度地减少其他客户端进行同步的需求。然而，每个人都有可能进行同步对于活跃性（3.3 节）非常重要。它也使证书能够作为被认证区块的最终性的证明。
 
 In practice, a client should execute the optional synchronization step (&#x24EA;) and the voting step (&#x2460;) on a separate thread for each validator. To prevent denial-of-service attacks from malicious validators, a client may stop synchronizing validators as soon as enough votes are collected (&#x2461;).
 
+在实践中，客户端应该为每个验证者在单独的线程上执行可选的同步步骤（⓪）和投票步骤（①）。为了防止恶意验证者发起拒绝服务攻击，一旦收集到足够的投票（②），客户端可以停止与验证者进行同步。
+
 The steps &#x2460;&#x2461;&#x2462; used to decide a new block in a single-owner chain constitute a 1.5 round-trip protocol. Inspired by reliable broadcast, this protocol does not have a notion of “view change” <a href='#References12'>[12]</a> to support retries. In other words, a chain owner that has started submitting a (valid) block proposal *B* cannot interrupt the process to propose a different block once some validators have voted for *B*. Doing so would risk blocking their chain. For this reason, Linera also supports a variant with an extra round trip (Section <a href='#Section2.9'>2.9</a>).
 
-### 2.9 Extensions to the core protocol
+决定单所有者链中的新区块的步骤 ①②③ 构成了一个1.5往返协议。受可靠广播启发，这个协议没有“视图更改” [12] 的概念来支持重试。换句话说，一旦某些验证者对 B 进行了投票，已经开始提交（有效的）区块提案 B 的链所有者就不能中断流程以提出不同的区块。这样做会有阻塞他们的链的风险。因此，Linera也支持一种额外往返的变体（2.9 节）。
+
+### 2.9 Extensions to the core protocol    核心协议的扩展
 
 <a name='Section2。9'>We</a> now sketch a number of important extensions to the core Linera multi-chain protocol.
 
+我们现在概述一些对核心Linera多链协议的重要扩展。
+
 **Permissioned chains.** The protocol presented in Section <a href='#Section2.8'>2.8</a> allows extending a singleowner microchain optimistically in 1.5 client-validator round trips. Linera also supports a more complex protocol with 2.5 round trips to address the following use cases:
 
+许可链。在第2.8节中介绍的协议允许在1.5个客户端-验证者往返中乐观地扩展单所有者微链。Linera还支持一个更复杂的协议，需要2.5个往返来解决以下用例：
+
 - A single chain owner wants to be able to safely interrupt ongoing block proposals while they are in progress.
+- 一个单一链所有者希望能够安全地中断正在进行中的区块提案。
 - Transactions in blocks depend on external oracles (*e.g.* Unix time) and include conditions that may become invalid after being valid.
+- 区块中的交易依赖于外部预言机（例如Unix时间），并包括可能在有效后变得无效的条件。
 - Multiple owners wish to operate the chain (assuming minimal off-chain coordination).
+- 多个所有者希望经营该链（假设最小化链下协调）。
 - A single chain owner wishes to delegate maintenance operations related to validator reconfigurations.
+- 一个单一链所有者希望委托与验证者重配置相关的维护操作。
 
 We omit the details of the 2.5 round-trip protocol for brevity. It can be seen as a simplified partially-synchronous BFT consensus protocol <a href='#References12'>[12]</a> with view changes (aka rounds) but without leader election or timeouts. In the absence of leader election, different owners may try to propose a different block at the same time (*i.e.* in the same block height and round) causing the current round to fail and another round to be needed. As a consequence, this mode of operation assumes that the owner(s) of a same chain maintain a sufficient level of (off-chain) cooperation so that ultimately only one of them proposes a block and succeeds.
 
+出于简洁起见，我们省略了2.5个往返协议的细节。它可以被看作是一个简化的部分同步BFT共识协议 [12]，其中包括视图更改（也称为轮次），但不包括领导者选举或超时。在没有领导者选举的情况下，不同的所有者可能会同时尝试提议不同的区块（即在相同的区块高度和轮次），导致当前轮次失败并需要另一个轮次。因此，这种操作模式假定同一链的所有者或所有者之间保持足够水平的（链下）合作，以便最终只有其中一个提出并成功提交区块。
+
 **Public chains.** Public chains are used in the remaining use cases: when a chain continuously produces new blocks with the help of validators. In this case, the transactions authorized in a block are likely to be only those receiving cross-chain messages from other chains. Examples of applications include:
 
+公共链。公共链在其余的用例中被使用：当一条链借助验证者不断产生新区块时。在这种情况下，一个区块中被授权的交易可能只是那些接收来自其他链的跨链消息的交易。应用示例包括：
+
 - Managing validators and stakes in one place (see reconfigurations below).
+- 管理验证者和权益的一个地方（请参见下面的重新配置）。
 - Running traditional blockchain algorithms (*e.g.* AMMs) that were not designed to take advantage of the multi-chain approach;
+- 运行传统的区块链算法（例如 AMM），这些算法并不是为了利用多链方法而设计的；
 - Facilitating the creation of microchains for new users.
+- 促进为新用户创建微链。
 
 Public chains in Linera will be based on a full BFT consensus protocol. This is the only case in the Linera infrastructure where Linera validators take an active role in block proposals. We plan to rely on user chains and cross-chain messages instead of a traditional mempool to gather user transactions into new blocks.
 
+Linera中的公共链将基于完整的BFT共识协议。这是Linera基础设施中唯一一种情况，Linera验证者会在区块提案中发挥积极作用。我们计划依赖用户链和跨链消息，而不是传统的内存池，将用户交易收集到新的区块中。
+
 **Pub/sub channels.** A common use case for cross-chain asynchronous messages is for an application instance on a chain id to create a channel and maintain a list of subscribers to it. Specifically, a channel operates as follows:
 
+Pub/sub频道。跨链异步消息的一个常见用例是，链 id 上的应用程序实例创建一个通道并维护其订阅者列表。具体来说，通道的运作如下：
+
 - Transactions executed on the chain *id* may push new messages to the channel;
+- 在链 id 上执行的交易可能会向通道推送新消息；
 - When this happens, the current subscribers receive a cross-chain message in their inbox;
+- 当这种情况发生时，当前的订阅者会在其收件箱中收到一条跨链消息；
 - The set of subscribers is managed on the chain *id* by receiving and executing messages $Subscribe(id')$ and $Unsubscribe(id')$ from subscribers $id'$.
+- 订阅者的集合由在链 id 上接收和执行来自订阅者的消息和维护。
+
 
 We have found pub/sub channels to be a useful abstraction when programming Linera applications (see also Section <a href='#Section4'>4</a>). The Linera protocol supports pub/sub channels natively in order to enable specific optimizations. For instance, newly accepted subscribers currently receive the last message of a channel without additional work from the owner of the channel.
 
+我们发现 pub/sub 频道在编写 Linera 应用程序时是一个有用的抽象（也见第 4 节）。Linera 协议支持 pub/sub 频道的本地化，以便实现特定的优化。例如，新接受的订阅者当前可以在不需要频道所有者额外工作的情况下接收到频道的最后一条消息。
+
 **Reconfigurations.** Being able to change the set of Linera validators (aka the *committee*) is crucial for the security of the system (see Section <a href='#Section5'>5</a>).
+
+重新配置。能够更改 Linera 验证者集合（也称为委员会）对于系统的安全性至关重要（见第 5 节）。
 
 To do so, Linera deploys a dedicated Admin public chain running the application for system management. This system application is in charge of keeping track of the successive sets of validators, aka *committees*, including their stakes and network addresses. The successive configurations produced by this application are identified by their *epoch* number.
 
+为此，Linera 部署了一个专用的管理公共链来运行系统管理应用。这个系统应用负责跟踪连续的验证者集合，即委员会，包括它们的权益和网络地址。由该应用程序产生的连续配置通过它们的时代编号进行标识。
+
 To safely disseminate the information that the set of validators is changing, the Admin publishes new configurations to a special channel that every Linera microchain is subscribed to when created. $^{2}$ A newly created microchain automatically receives the current validator set (*i.e.* the last message in the admin channel) and sets its current epoch number field.
+
+为了安全地传播验证者集合正在更改的信息，管理者将新配置发布到一个特殊的频道，每个创建时都会订阅的 Linera 微链。一个新创建的微链会自动接收当前的验证者集合（即管理频道中的最后一条消息），并设置其当前的时代编号字段。
 
 When a new committee is created, every microchain receives a message in its inbox. Importantly, microchain owners must include the incoming message in a new block to explicitly migrate their chain to the new set of validators. This must be done when both sets of validators are still operating, before the previous set stops.
 
+当新的委员会被创建时，每个微链都会在其收件箱中收到一条消息。重要的是，微链所有者必须将传入的消息包含在一个新的区块中，以明确地将他们的链迁移到新的验证者集合上。这必须在两组验证者仍在运行，并且之前的验证者组停止之前完成。
+
 Thanks to the scalable nature of Linera, migrating a large number of chains to a new configuration in a short period of time is doable in parallel provided that enough clients are active. To facilitate this process and allow chain owners to go offline for an extended period, we envision that many users will authorize a third party to create the migration blocks on their behalf. This will however require configuring the chain to use the 2.5 round-trip protocol mentioned above for the duration of the authorization.
 
+由于Linera具有可伸缩性，可以并行在短时间内迁移大量的链到新的配置，只要足够多的客户端是活跃的。为了简化这个过程，并允许链所有者在长时间内离线，我们预计许多用户将授权第三方代表他们创建迁移块。然而，这将需要配置链在授权期间使用上述提及的 2.5 往返协议。
+
 To prevent long-range attacks, the Admin chain will also regularly suggest old committees to be *deprecated*. After accepting such an update, microchains will ignore messages in blocks certified only by deprecated committees. The old messages will be accepted again only after they are included in a chain of blocks ending with a trusted configuration (hence *re-certified*).
+
+为了防止远程攻击，管理公共链还将定期建议废弃旧的委员会。在接受此类更新后，微链将忽略仅由已废弃的委员会认证的区块中的消息。只有在这些消息被包含在一个以受信任配置结束的区块链中（因此重新认证）后，才会再次接受这些旧消息。
 
 ## 3 Analysis of the Multi-Chain Protocol
 
