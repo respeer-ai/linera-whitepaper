@@ -593,156 +593,271 @@ To prevent long-range attacks, the Admin chain will also regularly suggest old c
 
 为了防止远程攻击，管理公共链还将定期建议废弃旧的委员会。在接受此类更新后，微链将忽略仅由已废弃的委员会认证的区块中的消息。只有在这些消息被包含在一个以受信任配置结束的区块链中（因此重新认证）后，才会再次接受这些旧消息。
 
-## 3 Analysis of the Multi-Chain Protocol
+## 3 Analysis of the Multi-Chain Protocol   多链协议分析
 
 <a name='Section3'>In</a> this section, we analyze the design goals set by the Linera blockchain, including responsiveness, scalability and security guarantees.
 
-### 3.1 Responsiveness
+在这一部分，我们分析了Linera区块链设定的设计目标，包括响应性、可扩展性和安全性保证。
+
+### 3.1 Responsiveness  响应性
 
 A common problem when interacting with classical blockchains is the lack of performance guarantees. Transactions submitted to the mempool may be picked instantly, after a moment, or never, depending on the other user transactions posted around the same time. Canceling a pending transaction typically requires submitting another one with a higher gas fee. Furthermore, classical blockchains have a fixed and limited throughput: large enough bursts of submitted transactions (e.g. due to a popular airdrop) must eventually cause a backlog and/or a surge in transaction fees. Mempool systems also expose users to value drainage with Miner Extractable Value (MEV) techniques.
 
+在与传统区块链进行交互时常见的问题是缺乏性能保证。提交到内存池的交易可能会立即被选中，或者在一段时间后被选中，也可能永远不会被选中，这取决于其他用户在同一时间提交的交易。取消待处理的交易通常需要提交另一个带有更高 gas 费用的交易。此外，传统区块链具有固定且有限的吞吐量：足够大的交易提交突发（如由于热门空投而引起的）最终必然会导致积压和/或交易费用激增。内存池系统还通过矿工可提取价值（MEV）技术让用户面临价值流失的风险。
+
 Linera allows users to manage their own chain and work around these problems thanks to a lightweight block extension protocol inspired by client-based reliable broadcast (Section <a href='#Section2.8'>2.8</a>). This approach does not require a mempool, as users submit their transactions directly to the validators and fully control the processing time. The parallel communication with the validators means that the only processing delay is imposed by the network roundtrip time (RTT) between the client and the validators (usually a few hundred milliseconds). Finally, we anticipate that removing the mempool and diminishing latency should greatly reduce MEV opportunities.
 
-### 3.2 Scalability
+Linera 允许用户管理自己的链，并通过受 client-based reliable broadcast (Section 2.8) 启发的轻量级区块扩展协议解决这些问题。这种方法不需要内存池，因为用户直接将其交易提交给验证者，并完全控制处理时间。与验证者的并行通信意味着唯一的处理延迟来自客户端和验证者之间的网络往返时间（RTT）（通常为几百毫秒）。最后，我们预计移除内存池并减少延迟应该会大大减少 MEV 机会。
+
+
+### 3.2 Scalability    可扩展性
 
 The microchain approach (Section <a href='#Section2.4'>2.4</a>) allows Linera validators to be efficiently sharded across multiple workers. Concretely, each worker in a validator is responsible for a particular subset of microchains. Clients communicate with the load balancer of each validator, which dispatches queries internally to the appropriate worker (Figure 2).
+
+微链方法（第2.4节）允许 Linera 验证者在多个工作节点之间高效地进行分片。具体来说，验证者中的每个工作节点负责处理特定的微链子集。客户端与每个验证者的负载均衡器进行通信，负载均衡器将查询内部分配给适当的工作节点（图2）。
 
 ![image](https://github.com/kikakkz/linera-whitepaper/assets/13128505/a7654bf4-7c6b-4b90-8bcd-0a8e3b485c69)
 
 This design allows Linera to scale horizontally as the load of the system increases: each validator only needs to add worker machines to cope with the traffic. Importantly, sharding is internal: the number of workers and the assignment of microchains to workers do not need to be consistent across validators.
 
+这种设计使得 Linera 在系统负载增加时可以水平扩展：每个验证者只需要增加工作节点来应对流量。重要的是，分片是内部的：工作节点的数量和微链分配给工作节点的方式在不同的验证者之间并不需要保持一致。
+
 Workers within a single validator belong to a single entity and thus trust one another. This makes the communication between workers—and therefore the cross-chain requests of Linera (Section <a href='#Section2.5'>2.5</a>)—quick and inexpensive.
+
+单个验证者内的工作节点属于单一实体，因此彼此之间相互信任。这使得 Linera 的工作节点之间的通信——因此也就是 Linera 的跨链请求（第2.5节）——变得快速且廉价。
 
 The sharding model of Linera is different from the approach called *blockchain sharding* [<a href='#References31'>31</a>, <a href='#References33'>33</a>]. In the latter, cross-chain messages are exchanged between groups of mutually distrusting nodes (i.e., the validators in charge of each shard) usually spread across the Internet. This incurs significant overhead. Linera uses point-to-point communication across co-located workers that trust each other and requires much fewer resources. At the same time, larger validators can be efficiently audited by clients who want to control their operations. We describe the audit operation in Section <a href='#Section5'>5</a>.
 
+Linera 的分片模型与所谓的区块链分片方法[31, 33]不同。在后者中，跨链消息是在相互不信任的节点组（即每个分片的验证者）之间交换的，这些节点通常分布在互联网上。这会造成很大的开销。Linera 使用了相互信任的共同工作节点之间的点对点通信，并且需要的资源要少得多。同时，希望控制其操作的客户端可以对较大的验证者进行高效审计。我们将在第5节中介绍审计操作。
+
 The elastic architecture of Linera allows validators to adapt to traffic fluctuations. When an increased number of transactions are submitted, it is easy to increase the number of cloud-based workers processing the transactions. The same workers can be quickly turned off when no longer needed to reduce costs.
+
+Linera 的弹性架构允许验证者适应流量波动。当提交的交易数量增加时，很容易增加处理交易的基于云的工作节点的数量。不再需要时，这些工作节点可以迅速关闭以减少成本。
 
 The *public chains* of Linera require a full BFT consensus protocol to order blocks submitted by multiple clients (Section <a href='#Section2.9'>2.9</a>). Yet, the consensus protocol is instantiated once per public microchain rather than once for the entire system. This has a number of benefits. First, users from different public microchains cannot degrade each other’s experience. Second, the transaction rate of a single microchain is not a limiting factor for the entire system. Ultimately, the throughput of Linera can be always increased by creating additional microchains and augmenting the size of validators.
 
-### 3.3 Security
+Linera 的公共链需要使用完整的 BFT 共识协议来对多个客户端提交的区块进行排序（第2.9节）。然而，共识协议在每个公共微链中只被实例化一次，而不是针对整个系统。这有许多好处。首先，来自不同公共微链的用户不会降低彼此的体验。其次，单个微链的交易速率不会成为整个系统的限制因素。最终，通过创建额外的微链并增加验证者的规模，Linera 的吞吐量总是可以提高的。
+
+### 3.3 Security  安全性
 
 <a name='Section3.3'>In</a> this section, we provide an informal security analysis of the Linera multi-chain protocol. Following the description in Section <a href='#Section2'>2</a>, we focus on single-owner chains. The analysis will be extended to other types of accounts (Section 2.9) in future reports.
 
+在本节中，我们对 Linera 多链协议进行了初步的安全性分析。根据第2节中的描述，我们侧重于单所有者链。未来的报告将会扩展分析到其他类型的账户（第2.9节）。
+
 **Claim 1** (Safety). *For any microchain, every validator sees (a prefix of ) the same chain of blocks, therefore it applies the same sequence of modifications to the execution state of the chain and eventually delivers the same set of messages to the other chains*.
+
+声明 1（安全性）。对于任何微链，每个验证者都看到（某段）相同的区块链，因此它们对链的执行状态应用相同的修改序列，并最终向其他链交付相同的消息集。
 
 Indeed, per Algorithm 2, each honest validator votes for at most one valid block at a given height per microchain. By the quorum intersection property (Section <a href='#Section2.2'>2.2</a>), under BFT assumption, there can be only one block per height per chain certified by a quorum of validators. The set of outgoing messages from a chain (the cross-requests in Algorithm 1) is a deterministic function of the current chain of blocks.
 
+确实，根据算法 2，每个诚实的验证者针对给定高度的每个微链最多投票支持一个有效的区块。基于 BFT 假设的择取交集属性（第2.2节），只能有一个经验证者择取认证的每个链高度的区块。从链中发出的消息集合（算法 1 中的跨链请求）是当前区块链的确定性函数。
+
 Importantly, asynchronous cross-chain messages are delivered exactly once after they are scheduled. This allows applications to safely transfer assets.
+
+重要的是，异步的跨链消息在调度后仅被传递一次。这使得应用可以安全地转移资产。
 
 **Claim 2** (Eventual consistency of chains). *If a microchain is extended with a new certified block on an honest validator, any user can take a series of steps to ensure that this block is added to the chain on every honest validator*.
 
+声明 2（区块链的最终一致性）。如果在一个诚实的验证者上对微链进行了新的认证区块扩展，任何用户都可以采取一系列步骤来确保这个区块被添加到每个诚实的验证者的链上。
+
 Indeed, any user can retrieve the new certificate and its predecessors from the honest validator and deliver it to validators that still have not received it. The exact sequencing in which blocks can be uploaded to a validator is discussed in Section <a href='#Section2.8'>2.8</a>.
+
+事实上，任何用户都可以从诚实的验证者那里检索新的认证以及它的前序，并将其交付给那些尚未收到的验证者。有关区块上传到验证者的确切顺序在第2.8节中有讨论。
 
 **Claim 3** (Eventual consistency of asynchronous messages). *If a microchain receives a crosschain message on an honest validator, any user can take a series of steps to ensure that this message is received by the chain on every honest validator*.
 
+声明 3（异步消息的最终一致性）。如果在一个诚实的验证者上的微链接收到了跨链消息，任何用户都可以采取一系列步骤来确保这个消息被每个诚实的验证者的链接收到。
+
 An asynchronous message is received by a chain on a particular validator only after a block containing a transaction that triggers the message is signed by a quorum and added to the sender’s chain. When this happens, the state of the receiving chain is updated to track the origin of the message (see **received**$^{id}(α)$ in Section <a href='#Section2.6'>2.6</a>). This allows a client to download the corresponding block from the same validator if needed. Any honest validator adding the same block for the first time will add the same message to the recipient’s inbox.
+
+异步消息只有在包含触发消息的交易的区块被择取并添加到发送者的区块链后，才会被特定验证者的链接收。当发生这种情况时，接收链的状态将会被更新以追踪消息的来源（请参见第2.6节中的received）。这允许客户端在需要时从同一验证者下载相应的区块。任何第一次添加相同区块的诚实验证者将把相同的消息添加到接收者的收件箱中。
 
 **Claim 4** (Authenticity). *Only the owner(s) of a microchain can extend their microchain*.
 
+声明 4（真实性）。只有微链的所有者才能扩展他们的微链。
+
 Honest validators only accept block proposals if they are authenticated by an owner (Algorithm 2). This ensures that no one else can add blocks to the microchain. Other types of microchains (Section <a href='#Section2.9'>2.9</a>) implement similar verifications.
+
+诚实的验证者仅在区块经过所有者认证时才接受区块提案（算法2）。这确保了没有其他人可以向微链添加区块。其他类型的微链（第2.9节）也实施了类似的验证。
 
 **Claim 5** (Piecewise Auditability). *There is sufficient public cryptographic evidence for the state of Linera to be audited for correctness in a distributed way, one chain at a time*.
 
+声明 5（分段可审计性）。对于 Linera 的状态，存在足够的公共加密证据，可以按照分布式方式逐个链进行正确性审计。
+
 Any Linera client can request a copy of any microchain and re-execute the certified blocks. This allows verifying the successive execution states and the set of outgoing messages from the chain. Execution states are typically compared across validators by including execution hashes in blocks. The received messages of a chain should be compared to the outgoing messages from the other chains (Section <a href='#Section5.2'>5.2</a>).
+
+任何 Linera 客户端都可以请求任何微链的副本并重新执行认证的区块。这允许验证连续的执行状态和区块链的发出消息集合。执行状态通常通过在区块中包含执行哈希来在验证者之间进行比较。一条链的接收消息应该与其他链的发出消息进行比较（第5.2节）。
 
 **Claim 6** (Worst-case Efficiency). *In a single-owner chain, Byzantine validators cannot significantly delay block proposals and block confirmations by correct users*.
 
+声明 6（最坏情况效率）。在单所有者链中，拜占庭验证者无法通过正确用户显著延迟区块提案和区块确认。
+
 Linera clients contact all the validators in parallel and consider an operation as completed as soon as they receive signatures from a quorum of validators (Section <a href='#Section2.8'>2.8</a>).
 
+Linera 客户端会并行地联系所有验证者，并且一旦他们收到来自验证者择取的签名，就会将操作视为已完成（第2.8节）。
+
 **Claim 7** (Monotonic block validation). *In a single-owner chain, if a block proposal is the first one to be signed by the owner at a given block height and it is accepted by an honest validator, then with appropriate actions, the chain owner always eventually succeeds in gathering enough votes to produce a certificate*.
+
+声明 7（单调区块验证）。在单所有者链中，如果一个区块提案是在给定高度首次由所有者签名，并且被诚实验证者接受，那么通过适当的操作，链所有者总能最终成功地聚集足够的选票来生成一个证书。
 
 ![image](https://github.com/kikakkz/linera-whitepaper/assets/13128505/d8aea5cc-67c6-440b-bbb1-b9d457b96c8a)
 
 If the block proposal *B* for a chain *id* is accepted by a validator and is the first one ever signed at this height, this means that every other validator α has already accepted the proposal (*i.e.* ${pending}^{id}(α) = B$) or has not voted yet (*i.e.* ${pending}^{id}(α) = ⊥$). In the latter case, block validation may temporarily fail for *α* if some earlier blocks or messages are missing: this can be resolved by updating the validator with the missing blocks (see Section <a href='#Section2.8'>2.8</a>). After proper synchronization, in the absence of external oracle and nondeterministic behaviors, submitting the proposal *B* to the validator will eventually produce the expected vote for *B*.
 
-## 4 Building Web3 Applications in Linera
+如果区块提案 B 用于某个链 ID 被验证者接受，并且是在该高度首次被签名，这意味着每个其他验证者 α 已经接受了该提案（即 ）或尚未投票（即 ）。在后一种情况下，如果一些早期的区块或消息丢失，可能会导致 α 的区块验证暂时失败：这可以通过向验证者更新缺失的区块来解决（参见第2.8节）。经过适当的同步，在没有外部预言机和非确定性行为的情况下，将提案 B 提交给验证者最终将产生对 B 的预期投票。
+
+## 4 Building Web3 Applications in Linera    在 Linera 中构建 Web3 应用程序
 
 <a name='Section4'>The</a> programming model of Linera <a href='#References30'>[1]</a> is designed to provide rich, language-agnostic composability to application developers while taking advantage of microchains for scaling.
 
-### 4.1 Creating applications
+Linera[1]的编程模型旨在为应用程序开发人员提供丰富的、与语言无关的可组合性，并利用微链进行扩展。
+
+### 4.1 Creating applications    创建应用程序
 
 Linera uses the WebAssembly (Wasm) virtual machine [<a href='#References3'>3</a>, <a href='#References23'>23</a>] as the execution engine for user applications. The SDK to develop Linera applications will be initially targeting the Rust language.
 
+Linera 使用 WebAssembly（Wasm）虚拟机[3, 23]作为用户应用程序的执行引擎。最初，开发 Linera 应用程序的 SDK 将针对 Rust 语言。
+
 An application is created in several steps (Figure 3). First, a software module (aka smart contract) in Rust is compiled to Wasm bytecode. The bytecode is then published by its author on a microchain of its choice and receives a unique *bytecode identifier*. Next, the bytecode is instantiated using the bytecode identifier and specific application parameters (*e.g.* name of the token, token supply, etc). This operation creates a fresh application identifier (“APP 1” in Figure 3) and initializes the local state of the application (“APP INSTANCE $1_B$”). This initial local state may hold specific parameters to help administrating the new application in the future.
+
+应用程序的创建分为几个步骤（见图3）。首先，使用 Rust 编写的软件模块（也称为智能合约）被编译成 Wasm 字节码。然后，该字节码由其作者发布到所选的微链上，并获得一个唯一的字节码标识符。接下来，使用字节码标识符和特定的应用程序参数（例如代币的名称、代币供应量等）实例化字节码。这个操作创建了一个新的应用程序标识符（图3中的“APP 1”），并初始化了应用程序的本地状态（“APP INSTANCE”）。这个初始本地状态可能包含特定的参数，以帮助将来管理新应用程序。
 
 A single bytecode identifier can spawn across multiple, independent applications that share the same code but do not share the same configuration (“APP 1” and “APP 2” in Figure 3).
 
+一个字节码标识符可以衍生出多个独立的应用程序，它们共享相同的代码但不共享相同的配置（图3中的“APP 1”和“APP 2”）。
+
 ![image](https://github.com/kikakkz/linera-whitepaper/assets/13128505/4b5b2b92-3439-4a08-9eef-685e81534547)
 
-### 4.2 Multi-chain deployment
+### 4.2 Multi-chain deployment    多链部署
 
 Linera applications are multi-chain by default in the sense that their global state is generally split across several chains. In other words, the local instance of an application at a given chain holds only the subset of the application state that is located there. For instance, in an ERC-20-like token management application, the owner of a single-owner chain may want to hold their personal accounts on the chain that they own.
 
+Linera 应用程序在默认情况下是多链的，这意味着它们的全局状态通常分布在几个链上。换句话说，应用程序在给定链上的本地实例只持有该链上所在位置的应用程序状态的子集。例如，在类似 ERC-20 代币管理的应用程序中，单所有者链的所有者可能希望在他们拥有的链上持有他们的个人账户。
+
 The bytecode of an application is automatically downloaded and the application started when the owner of a microchain accepts an incoming message (Section <a href='#Section2.5'>2.5</a>) from the application for the first time (“APP INSTANCE $1_C$” in Figure 3).
 
-### 4.3 Cross-chain communication
+当微链的所有者首次接受来自应用程序的传入消息时（参见第2.5节），应用程序的字节码会被自动下载，并开始运行（图3中的“APP INSTANCE”）。
+
+### 4.3 Cross-chain communication   跨链通信
 
 <a name='Section4.3'>Cross-chain</a> communication between applications is realized using asynchronous calls to allow microchains to run independently. The programming style for cross-chain coordination between Linera applications is inspired by the actor model [6]. The implementation relies on cross-chain requests described in Section <a href='#Section2.5'>2.5</a>. The fundamental point is that each actor has exclusive access to its own internal state and that actors cannot call each other directly.
 
+应用程序之间的跨链通信是通过异步调用实现的，以允许微链独立运行。Linera 应用程序之间的跨链协调编程风格受到了 actor 模型[6]的启发。该实现依赖于第2.5节中描述的跨链请求。其基本观点是每个 actor 都有对其自己内部状态的独占访问权，并且 actor 不能直接相互调用。
+
 **Cross-chain messages.** Cross-chain messages allow an application to transfer arbitrary data asynchronously from one chain to another (Figure 4). To make sense of the data, the same application must be on the sending end and on the receiving end of a cross-chain message. In practice, the local instance of an application maintains an inbox per origin that the instance has communicated with. When an application wants to send a message to a destination, it returns a value containing the message so that the runtime can execute the appropriate cross-chain request.
+
+跨链消息。跨链消息允许应用程序将任意数据异步从一条链传输到另一条链（图4）。为了理解这些数据，发送端和接收端必须是同一个应用程序。在实践中，应用程序的本地实例会维护与其通信的每个来源的收件箱。当应用程序希望向目标发送消息时，它返回一个包含消息的值，以便运行时可以执行适当的跨链请求。
 
 Contrary to FastPay <a href='#References7'>[7]</a> and Zef <a href='#References8'>[8]</a>, Linera is not limited to payment requests and can deliver arbitrary cross-chain messages defined by user applications. The effects of cross-chain messages do not generally commute, therefore in Linera, the ordering in which incoming messages are received and then executed by a recipient’s chain is important. We solve this issue by relying on block proposers to specify the ordering of incoming messages when picking the messages from the chain inboxes.
 
+与 FastPay [7] 和 Zef [8] 不同，Linera 不仅限于支付请求，还可以传递用户应用程序定义的任意跨链消息。跨链消息的影响通常不可交换，因此在 Linera 中，接收方链接收并执行传入消息的顺序很重要。我们通过依赖区块提议者来指定从链收件箱中提取消息的顺序来解决这个问题。
+
 In general, messages are not guaranteed to be picked on the receiving side. When they are, the current implementation forces messages to be picked in order. This general policy will likely be refined in the future to account for specific use cases, notably for public chains where block production never stops (Section <a href='#Section2.9'>2.9</a>).
+
+总的来说，在接收端，并不能保证消息一定会被提取。当它们被提取时，当前的实现强制消息按顺序提取。这种一般性策略可能会在未来得到进一步完善，以考虑特定的用例，特别是对于区块生产从不停止的公共链（第2.9节）。
 
 **Pub/sub channels.** On top of the one-to-one communication, Linera supports one-tomany communication using *channels*. A user can create a channel within an application, while the same application’s instances residing on other microchains can subscribe to it by sending a subscribe message with the publisher application and chain identifiers. Importantly, a subscriber is added to a channel only when the publisher accepts the subscription by adding the registration message to its chain. Under the hood, channels act as a set of one-to-one connections. A message sent to a channel is delivered to all the inboxes that are subscribed to the channel and can be picked up by the subscribers. By design, a late subscriber, once accepted by the publisher, receives the last message sent to the channel—rather than the entire history of messages.
 
-### 4.4 Local composability
+发布/订阅频道。除了一对一通信外，Linera 还支持使用频道进行一对多通信。用户可以在应用程序内创建频道，而驻留在其他微链上的同一应用程序实例可以通过发送带有发布者应用程序和链标识符的订阅消息来订阅它。需要注意的是，只有当发布者通过在其链上添加注册消息来接受订阅时，订阅者才会被添加到频道。在底层，频道充当一组一对一连接。发送到频道的消息会传递到所有订阅该频道的收件箱，并且能够被订阅者接收。设计上，一旦被发布者接受，晚订阅者会接收到发送到频道的最后一条消息，而不是整个消息历史。
+
+### 4.4 Local composability  本地可组合性
 
 **Synchronous calls.** On the same microchain, different Linera applications can be composed using synchronous calls similar to smart-contract calls in classical blockchains such as Ethereum <a href='#References32'>[32]</a> (see the top part of Figure 4). The state modifications resulting from a sequence of application calls and originating from a single user transaction are atomic. In other words, either all of the calls succeed or all of them fail. Calling an application creates a virtual copy of its internal state and executes the call on the cached state. At this point, the new state is not yet written to storage. If any of the transactions fails, all the staged modifications are discarded.
 
+同步调用。在同一微链上，不同的 Linera 应用程序可以使用类似于经典区块链（如以太坊[32]）中的智能合约调用的同步调用进行组合（请参阅图4的顶部部分）。由一系列应用程序调用产生的状态修改是原子性的，并源自单个用户交易。换句话说，所有调用要么全部成功，要么全部失败。调用一个应用程序会创建其内部状态的虚拟副本，并在缓存状态上执行调用。此时，新状态尚未写入存储。如果任何事务失败，所有暂存的修改将被丢弃。
+
 **Sessions.** In some cases, it is desirable to delegate the management of a piece of state from one application to another. We call the temporary object managing such a detached state a *session*. A typical example of a use case may go as follows: (i) an application B calls into the token-management application A; (ii) some tokens are withdrawn from the ledger of A and put into a new session; (iii) B receives ownership of the session; (iv) B calls into the session to move the tokens back to the ledger of A, say, under another account; this effectively consumes and terminates the session.
+
+会话。在某些情况下，希望将一个状态片段的管理委托给另一个应用程序。我们将管理这样的分离状态的临时对象称为会话。一个典型的用例可能如下：（i）应用程序 B 调用代币管理应用程序 A；（ii）从 A 的分类帐中提取一些代币并放入一个新的会话；（iii）B 接收会话的所有权；（iv）B 调用会话将代币移回 A 的分类帐，例如，到另一个账户；这实际上消耗并终止了会话。
 
 Sessions are guaranteed to be owned by a single application (no duplication). Consuming a session is not optional: sessions must be properly consumed before the end of the current transaction, otherwise, the transaction will fail. In addition to assets, sessions are thus suitable for managing temporary obligations, for instance, the obligation to pay back a flash loan <a href='#References25'>[25]</a>.
 
-### 4.5 User authentication
+会话保证由单个应用程序拥有（不重复）。消耗会话是强制性的：会话必须在当前交易结束之前正确地被消耗，否则交易将失败。除了资产外，会话因此适用于管理临时义务，例如偿还闪电贷款的义务[25]。
+
+### 4.5 User authentication   用户认证
 
 Applications often need to authenticate end users in order to authorize certain actions. For instance, transferring an asset should require the permission of its owner.
 
+在应用程序中，通常需要对最终用户进行身份验证以授权执行某些操作。例如，转移资产应该需要其所有者的许可。
+
 In Linera, users are authenticated when they propose a block in a chain that they own (Section <a href='#Section2.8'>2.8</a>). During execution, the identity of the user that signed the current block, called the *authenticated signer*, is visible to all the operations contained in the block by default.
+
+在Linera中，当用户在拥有的链上提出一个区块时会被认证（见第2.8节）。在执行过程中，签署当前区块的用户身份，默认情况下对该区块中包含的所有操作都是可见的，称为经过认证的签名者。
 
 An operation creating a cross-chain message may optionally propagate the current authenticated signer along with the message. This is important so that assets temporarily placed on another chain (say, a public chain) may be claimed by their owner.
 
+创建跨链消息的操作可以选择性地将当前经过认证的签名者与消息一起传播。这很重要，因为暂时放置在另一条链上（比如公共链）的资产可能需要它们的所有者来索取。
+
 Similarly, authenticated signers may be propagated when calling another application on the same chain. This allows applications to program new categories of assets and make them available to other applications using abstract APIs.
 
-### 4.6 Ephemeral chains
+同样，在调用同一链上的另一个应用程序时，经过认证的签名者也可以被传播。这使得应用程序能够编写新类别的资产，并使用抽象API使其对其他应用程序可用。
+
+### 4.6 Ephemeral chains    瞬时链
 
 Another specificity of the programming model of Linera is the ability to create short-lived permissioned chains (Section <a href='#Section2.9'>2.9</a>) meant for a short interaction between a small number of loosely coordinated users.
 
+Linera编程模型的另一个特点是能够创建短暂的权限链（第2.9节），用于少数松散协调用户之间的短期交互。
+
 For instance, two users may create a microchain for swapping two assets atomically. The shared microchain will have (up to) two owners and its parameters will be adapted to the exchange process. To use the chain, both users must transfer the assets that they want to exchange from their primary microchains to the shared chain, then one of the users must create a block to confirm or cancel the swap. Importantly, once the swap is concluded, the shared microchain is deactivated. This prevents any further extension of the temporary chain and allows archiving it in the future.
+
+例如，两个用户可以为了原子地交换两种资产而创建一个微链。共享的微链将有（最多）两个所有者，并且其参数将适应交换过程。要使用该链，两个用户必须将他们想要交换的资产从各自的主微链转移到共享链上，然后其中一个用户必须创建一个区块来确认或取消交换。重要的是，一旦交换完成，共享的微链就会被停用。这样可以防止临时链的进一步延伸，并允许在将来对其进行归档。
 
 To optimize liveness in the case of an ephemeral permissioned chain (Section <a href='#Section2.9'>2.9</a>), operations may interact with the user permissions to propose blocks as seen by the consensus protocol. For instance, in the case of a temporary chain for an atomic swap, it is desirable to restrict the ability to propose blocks to those owners who have already locked their assets. Another example is a temporary microchain dedicated to a game of chess between two users. Here, the application can determine which player needs to move and update the microchain consensus layer to accept the next block only from the chosen user. A more realistic chess application may also include a referee as an owner of the temporary chain to enforce progress.
 
-## 5 Decentralization
+为了优化瞬时的权限链（第2.9节）的活跃性，在操作中可以与用户权限交互以提出区块，如共识协议所见。例如，在用于原子交换的临时链的情况下，希望将提出区块的能力限制在那些已经锁定其资产的所有者身上。另一个例子是专门用于两个用户之间下国际象棋的临时微链。在这里，应用程序可以确定哪位玩家需要移动，并更新微链共识层，只接受来自所选用户的下一个区块。更实际的国际象棋应用程序可能还包括裁判作为临时链的所有者，以强制执行游戏的进展。
+
+## 5 Decentralization   去中心化
 
 <a name='Section5'>Linera</a> encourages validators to use cloud infrastructure to unlock elastic scaling and benefit from standard production environments. To maximize decentralization, Linera relies on two key features: delegated proof of stake (DPoS) and audits by the community.
 
-### 5.1 Delegated proof of stake
+Linera鼓励验证者使用云基础设施来实现弹性扩展，并从标准的生产环境中获益。为了最大程度地实现分散化，Linera依赖于两个关键特性：委托权益证明（DPoS）和社区的审计。
+
+### 5.1 Delegated proof of stake   委托权益证明
 
 To ensure the long-term security of the system, Linera relies on delegated proof of stake (DPoS): the voting rights of validators are functions of their stakes in the system, together with the stakes that are delegated to them by end users. For DPoS to function correctly, users must be able to change their delegation preferences, and validators must have an automated procedure to join and leave the system. Both operations require a public chain where any user can submit transactions. Reconfiguring validators also requires a carefullydesigned migration protocol for every chain. Both mechanisms were sketched in Section <a href='#Section2.9'>2.9</a>.
 
+为了确保系统的长期安全性，Linera依赖于委托权益证明（DPoS）：验证者的投票权取决于他们在系统中的股权，以及最终用户委托给他们的股权。为了使DPoS能够正确运行，用户必须能够更改其委托偏好，并且验证者必须有一个自动化程序来加入和离开系统。这两项操作都需要一个公共链，任何用户都可以提交交易。重新配置验证者还需要为每条链设计一个精心设计的迁移协议。这两个机制已在第2.9节中概述。
+
 Token delegation and economics will be made more precise in a separate document. To address long-range attacks—where old committees become corrupt <a href='#References17'>[17]</a>—, Linera allows microchains to refuse cross-chain messages (*e.g.* payments) from committees that are not trusted anymore (see Section <a href='#Section2.9'>2.9</a>).
 
-### 5.2 Auditability
+代币委托和经济学将在另一份文件中作出更精确的规定。为了解决长程攻击（即旧的委员会变得腐败的情况），Linera允许微链拒绝来自不再受信任的委员会的跨链消息（例如支付）（参见第2.9节）。
+
+### 5.2 Auditability    可审计性
 
 <a name='Section5.2'>Auditing</a> a blockchain traditionally requires running a *full node* that locally holds a copy of the entire transaction history. However, in the case of a high-throughput system, this may require significant amounts of disk space and CPU resources. When regular users—those using commodity hardware—need days or weeks to fully audit a decentralized system, the community may not be able to credibly deter a coalition of rogue validators from altering the protocol. Light clients <a href='#References14'>[14]</a> reduce resource usage but only check the block headers and do not provide the same level of verification.
 
+传统上，对区块链进行审计需要运行一个完整节点，该节点本地保存了整个交易历史的副本。然而，在高吞吐量系统的情况下，这可能需要大量的磁盘空间和CPU资源。当普通用户（即使用普通硬件的用户）需要数天甚至数周才能完全审计一个分散系统时，社区可能无法可信地阻止一组不良验证者改变协议。轻客户端[14]可以减少资源使用，但只检查区块头，并且不提供相同级别的验证。
+
 In contrast, the microchain approach makes it possible for the community to continuously audit Linera validators. In Linera, an auditor is similar to a client (Section <a href='#Section2.8'>2.8</a>) in that it only needs to track a small subset of microchains. Because scalability in Linera relies on having many chains rather than larger blocks, it is always feasible to replay the execution of a single chain in real-time on commodity hardware.
+
+相比之下，微链方法使得社区能够持续审计Linera的验证者。在Linera中，审计者类似于客户（第2.8节），他们只需要追踪微链的一个小子集。因为Linera的可扩展性依赖于拥有许多链而不是更大的区块，所以始终可以在普通硬件上实时重放单个链的执行过程。
 
 For the Linera community to continuously verify all the chains, a distributed protocol can be put in place on top of a shared distributed storage such as IPFS <a href='#References5'>[5]</a> as follows. Executing the blocks in a chain allows to verify the execution state and the outgoing messages. Blocks should typically be marked as audited and the outgoing messages indexed in the distributed storage. To complete the verification of a chain, the client must also verify that each incoming message was indeed produced by its sender chain. This can be done by looking up incoming messages in the shared storage to see if they have been verified already, and otherwise, schedule their verification.
 
-## Conclusion
+为了让Linera社区持续验证所有的链，可以在像IPFS [5]这样的共享分布式存储之上建立一个分布式协议。执行链中的区块可以验证执行状态和外发消息。区块通常应标记为已审计，并且外发消息应索引在分布式存储中。为了完成对链的验证，客户还必须验证每个传入消息确实是由其发送链产生的。这可以通过查找共享存储中的传入消息来完成，以查看它们是否已经被验证，否则安排它们的验证。
+
+## Conclusion  结论
 
 Linera aims to deliver the first multi-chain infrastructure with predictable performance, responsiveness, and security at the Internet scale. To do so, Linera introduces the idea of operating many parallel chains, called *microchains*, in the same set of validators, and using the internal network of each validator to quickly deliver the asynchronous messages between chains. This architecture has a number of advantages:
 
+Linera旨在在互联网规模上提供可预测的性能、响应能力和安全性的第一个多链基础设施。为了实现这一目标，Linera引入了在相同一组验证者中运行许多并行链（称为微链）的概念，并利用每个验证者的内部网络快速传递链之间的异步消息。这种架构具有许多优势：
+
 - **Elastic scaling.** In Linera, scalability is obtained by adding chains, not by increasing the size or the rate of blocks. Each validator may add and remove capacity (aka internal workers) at any time to maintain nominal performance for multi-chain applications.
+- 弹性扩展。在Linera中，可伸缩性是通过增加链的方式获得的，而不是通过增加区块的大小或速率。每个验证者可以随时添加和移除容量（即内部工作人员），以维持多链应用的名义性能。
 - **Responsiveness.** When microchains are operated by a single user, Linera uses a simplified mempool-free consensus protocol inspired by reliable broadcast [<a href='#References7'>7</a>,<a href='#References12'>12</a>]. This reduces block latency and ultimately makes Web3 applications more responsive.
+- 响应能力。当微链由单个用户操作时，Linera使用了受可靠广播[7,12]启发的简化无内存池共识协议。这降低了区块延迟，并最终使Web3应用更具响应性。
 - **Composability.** Compared to other multi-chain systems, low block latency also helps with composability: it allows receivers of asynchronous messages from another chain to quickly answer by adding a new block.
+- 可组合性。与其他多链系统相比，低区块延迟还有助于可组合性：它允许来自另一条链的异步消息的接收者通过添加新区块来快速回复。
 - **Chain security.** Compared to traditional multi-chain systems, a benefit of running all the microchains in the same set of validators is that creating chains does not impact the security model of Linera.
+- 链安全。与传统的多链系统相比，在同一组验证者中运行所有微链的好处在于创建链不会影响Linera的安全模型。
 - **Decentralization.** Linera relies on delegated proof of stake (DPoS) for security. Each microchain can be separately executed on commodity hardware. This allows clients and auditors to continuously run their own verifications and hold validators accountable.
+- 分散化。Linera依赖于委托权益证明（DPoS）来确保安全性。每个微链可以在普通硬件上单独执行。这使得客户和审计者可以持续运行自己的验证并追究验证者的责任。
 - **Language agnostic.** The programming model of Linera does not depend on a specific programming language. After careful consideration, we have decided to concentrate our efforts on Wasm and Rust for the initial execution layer of Linera.
+- 语言无关。Linera的编程模型不依赖于特定的编程语言。经过慎重考虑后，我们决定将我们的工作集中在Wasm和Rust上，用于Linera的初始执行层。
 
 In future reports, we will formalize the protocols to support multi-owner chains as well as the other extensions mentioned in Section <a href='#Section2.9'>2.9</a>. In particular, we plan to incorporate a state-of-the-art consensus mechanism (e.g. [<a href='#References16'>16</a>, <a href='#References22'>22</a>, <a href='#References27'>27</a>]) on top of our existing multi-chain infrastructure. We also plan to describe the economic models for the fair remuneration of validators and incentivization of users separately. Linera’s ability to deactivate and archive microchains provides an elegant venue to control the storage costs of validators in the future. In general, we anticipate that Linera’s integrated architecture and the minimization of validator interactions will be extremely helpful when it comes to optimizing the costs of operating validators at scale.
+
+在未来的报告中，我们将正式制定支持多所有者链的协议，以及第2.9节中提到的其他扩展。特别是，我们计划在我们现有的多链基础设施之上纳入最先进的共识机制（例如[16, 22, 27]）。我们还计划分别描述用于公平酬金验证者和激励用户的经济模型。Linera停用和存档微链的能力为将来控制验证者的存储成本提供了一个优雅的方法。总的来说，我们预计当涉及到优化大规模运营验证者的成本时，Linera集成的架构和最小化验证者交互将会非常有帮助。
 
 <h1>References</h1>
 <a name='References1'>[1]</a> Linera developer manual. https://linera.dev.
