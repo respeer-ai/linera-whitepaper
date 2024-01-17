@@ -60,11 +60,11 @@ The main reason why traditional blockchains have unpredictable worst-case outcom
 
 Unsurprisingly, many blockchain infrastructures have been proposed over the years with scalability improvements in mind. We provide here a high-level summary of the most common approaches, without attempting to be exhaustive.
 
-毫不奇怪，多年来已经提出了许多以提高可扩展性为目标的区块链基础架构。在这里，我们提供对最常见方法的高层次摘要，而不试图详尽无遗。
+毫无疑问，多年来已经提出了许多以提高可扩展性为目标的区块链基础架构。在这里，我们提供对最常见方法的高层次摘要，而不试图详尽无遗。
 
 **Faster single chain.** The production rate of blocks in a single chain is typically limited by the data propagation delay between validators <a href='#References18'>[18]</a>. Historically, block size has been the first parameter to be adjusted to maximize transaction throughput in function of the security requirements and the network constraints [<a href='#References18'>18</a>, <a href='#References20'>20</a>]. Thanks to recent advances in BFT consensus protocols (e.g. <a href='#References22'>[22]</a>), nowadays the new bottleneck for the transaction rate appears to be the sequential execution of transactions rather than consensus ordering.
 
-单链更快。单链中的区块生产速度通常受验证者之间数据传播延迟的限制。从历史上看，区块大小一直是被调整以最大化交易吞吐量的第一个参数，考虑到安全需求和网络约束。由于BFT共识协议的最新进展，如今交易速率的新瓶颈似乎是交易的顺序执行而不是共识排序。
+更快的单链。单链中的区块生产速度通常受验证者之间数据传播延迟的限制。早前，为了在满足安全需求和网络约束的条件下最大化TPS，区块大小是第一个被调整的参数。得益于拜占庭容错（BFT）共识协议的最新进展，今天TPS的新瓶颈看起来是交易的顺序执行而不是共识排序（从消息池中选择合适的交易进入区块以待确认）。
 
 Anticipating that many transactions contained in a block should be independent in practice, several recent projects have developed architectures able to execute a subset of transactions in parallel on several processing units <a href='#References19'>[19]</a>. While this certainly results in higher transaction rates, such systems are still characterized by a maximum number of transactions per second in the low 6 digits. Moreover, the effective transaction rate greatly depends on the proportion of transactions that are actually independent in each block <a href='#References26'>[26]</a>. Altogether, this makes it impossible to guarantee fees and/or delays in advance for a user without any assumption about the activity of the other users.
 
