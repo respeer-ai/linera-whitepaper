@@ -48,7 +48,7 @@ A [**跨链通信**](<>)<br>
 
 <a name='Section1'>Thanks</a> to blockchain technologies, the next iteration of the Internet, Web3, will empower users with a new generation of asset-aware applications and give them more democratic control over the digital economy. However, developing Web3 applications with a great user experience is currently a challenging task. One of the issues is reliability and responsiveness at scale: when too many users are active, blockchains may stop responding or demand punishing fees. In general, application developers want their infrastructure programming interfaces to be easy to use and predictable, disregarding the traffic caused by other applications. Centralized API providers <a href='#References30'>[30]</a> have been proposed to facilitate programming on top of popular blockchains, but such providers need to be trusted and will not improve the performance and the fees of the underlying blockchains. Linera aims to close the gap between centralized and decentralized applications by delivering a blockchain infrastructure that guarantees performance and responsiveness at scale.
 
-得益于区块链技术的发展，下一代互联网Web3将赋予用户新一代资产感知应用，并使他们在数字经济中拥有更多的民主控制权。然而，开发具有良好用户体验的Web3应用目前是一项具有挑战性的任务。其中一个问题是规模应用的可靠性和响应性：当太多用户活跃时，区块链可能停止响应或要求高昂的费用。总体而言，应用开发者希望他们的基础设施编程接口易于使用且可预测，而不受其他应用程序引起的流量干扰。已经提出了集中式API提供者来简化在流行的区块链上进行编程的过程，但这样的提供者需要被信任，且不能改善底层区块链的性能和费用。Linera的目标是通过提供一种区块链基础设施，以保证规模应用的性能和响应能力，来弥合集中式和去中心化应用之间的差距。
+得益于区块链技术的发展，下一代互联网Web3将赋予用户新一代资产感知应用，并使他们在数字经济中拥有更多的民主控制权。然而，开发具有良好用户体验的Web3应用目前是一项具有挑战性的任务。其中一个问题是规模应用的可靠性和响应性：当太多用户活跃时，区块链可能停止响应或需要支付昂贵的交易费。总体而言，应用开发者希望他们的基础设施编程接口易于使用且可预测，而不受其他应用程序引起的流量干扰。业内已经存在集中式API提供者来简化在流行的区块链上进行编程的过程，但这样的提供者需要被使用者信任，并且也不能改善底层区块链的性能和费用。Linera的目标是通过提供一种区块链基础设施，以保证规模应用的性能和响应能力，来弥合集中式和去中心化应用之间的差距。
 
 ### 1.2 区块空间稀缺问题
 
