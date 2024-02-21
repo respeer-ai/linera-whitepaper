@@ -60,15 +60,15 @@ The main reason why traditional blockchains have unpredictable worst-case outcom
 
 Unsurprisingly, many blockchain infrastructures have been proposed over the years with scalability improvements in mind. We provide here a high-level summary of the most common approaches, without attempting to be exhaustive.
 
-毫无疑问，多年来已经提出了许多以提高可扩展性为目标的区块链基础架构。在这里，我们提供对最常见方法的高层次摘要，而不试图详尽无遗。
+毫无疑问，多年来已经提出了许多以提高可扩展性为目标的区块链基础架构。在这里，我们提供对常见方法的高阶总结，而不试图详尽无遗。
 
 **Faster single chain.** The production rate of blocks in a single chain is typically limited by the data propagation delay between validators <a href='#References18'>[18]</a>. Historically, block size has been the first parameter to be adjusted to maximize transaction throughput in function of the security requirements and the network constraints [<a href='#References18'>18</a>, <a href='#References20'>20</a>]. Thanks to recent advances in BFT consensus protocols (e.g. <a href='#References22'>[22]</a>), nowadays the new bottleneck for the transaction rate appears to be the sequential execution of transactions rather than consensus ordering.
 
-更快的单链。单链中的区块生产速度通常受验证者之间数据传播延迟的限制。早前，为了在满足安全需求和网络约束的条件下最大化TPS，区块大小是第一个被调整的参数。得益于拜占庭容错（BFT）共识协议的最新进展，今天TPS的新瓶颈看起来是交易的顺序执行而不是共识排序（从消息池中选择合适的交易进入区块以待确认）。
+**更快的单链**。单链中的区块生产速度通常受验证者之间数据传播延迟的限制。早前，为了在满足安全需求和网络约束的条件下达成更高TPS，区块大小是第一个被调整的参数。得益于拜占庭容错（BFT）共识协议的最新进展，今天TPS的新瓶颈看起来是交易的顺序执行而不是共识排序（从消息池中选择合适的交易进入区块以待确认）。
 
 Anticipating that many transactions contained in a block should be independent in practice, several recent projects have developed architectures able to execute a subset of transactions in parallel on several processing units <a href='#References19'>[19]</a>. While this certainly results in higher transaction rates, such systems are still characterized by a maximum number of transactions per second in the low 6 digits. Moreover, the effective transaction rate greatly depends on the proportion of transactions that are actually independent in each block <a href='#References26'>[26]</a>. Altogether, this makes it impossible to guarantee fees and/or delays in advance for a user without any assumption about the activity of the other users.
 
-鉴于实际上一个区块中包含的许多交易应该是相互独立的，一些最近的项目已经开发出能够在多个处理单元上并行执行部分交易的架构。尽管这无疑会导致更高的交易速率，但这类系统仍然以低6位数字的每秒最大交易数量为特征。此外，有效的交易速率在很大程度上取决于每个区块中实际上相互独立的交易比例。总的来说，这使得无法在没有关于其他用户活动的假设的情况下提前为用户保证费用和/或延迟。
+我们可以预见的是，一个区块中包含的许多交易应该是相互独立的（译者注：这并不意味着一个区块中包含的所有交易都是相互独立的，仅表明大部分交易相互独立。例如，同一账号在一个区块内发送两次转账交易，则这两次转账交易并不独立，单该账号所有交易与其他账号的交易在本区块内是独立的）。基于这样的预期，文献19中的一些最近出现的项目已经开发出将一个区块中的交易分成不同的子集并行执行的架构<a href='#References19'>[19]</a>。毫无疑问，上述并行执行架构能够大大提升TPS，但依赖这样的架构依然难以达成超过6位数的TPS。此外，并行执行结构的TPS很大程度上取决于每个区块中相互独立的交易比例<a href='#References26'>[26]</a>，然而发送交易的用户不能事先知道该交易将被哪一个区块打包，亦不知该区块中其他用户发送的交易是否相互独立，由此导致用户无法确认该交易的执行费用和执行延迟。
 
 Lastly, in a high-throughput chain, auditing validators is made harder by the combination of CPU requirements for execution and networking requirements for data synchronization. Concretely, the sheer number of sequential transactions may prevent members of the community with only commodity hardware from replaying transactions fast enough to verify the work of validators in a meaningful way <a href='#References24'>[24]</a>.
 
