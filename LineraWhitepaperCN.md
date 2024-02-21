@@ -72,7 +72,9 @@ Anticipating that many transactions contained in a block should be independent i
 
 Lastly, in a high-throughput chain, auditing validators is made harder by the combination of CPU requirements for execution and networking requirements for data synchronization. Concretely, the sheer number of sequential transactions may prevent members of the community with only commodity hardware from replaying transactions fast enough to verify the work of validators in a meaningful way <a href='#References24'>[24]</a>.
 
-最后，在高吞吐量的区块链中，由于执行所需的CPU和数据同步所需的网络要求的结合，对验证者进行审计变得更加困难。具体来说，大量的顺序交易可能会阻止社区成员仅凭通用硬件快速重放交易，以有意义地验证验证者的工作。
+最后，在高TPS的区块链中，由于执行交易需要CPU（计算资源）具有较高的计算速度，交易数据同步需要较大的网络带宽，使得对验证者的审计变得更加困难。具体而言，通用由于硬件的计算速度和下载能力不足，不能快速重放交易，大部分只拥有通用硬件的社区成员因此不能便捷地参与验证者的审计。
+
+=================================
 
 **Blockchain sharding.** Another popular direction to address blockchain scalability has consisted in dividing the execution state between a fixed number of parallel chains, each being run independently by a separate set of validators. This is called blockchain sharding.
 
