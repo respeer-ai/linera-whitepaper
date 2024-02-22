@@ -74,19 +74,19 @@ Lastly, in a high-throughput chain, auditing validators is made harder by the co
 
 最后，在高TPS的区块链中，由于执行交易需要CPU（计算资源）具有较高的计算速度，交易数据同步需要较大的网络带宽，使得对验证者的审计变得更加困难。具体而言，通用由于硬件的计算速度和下载能力不足，不能快速重放交易，大部分只拥有通用硬件的社区成员因此不能便捷地参与验证者的审计。
 
-=================================
-
 **Blockchain sharding.** Another popular direction to address blockchain scalability has consisted in dividing the execution state between a fixed number of parallel chains, each being run independently by a separate set of validators. This is called blockchain sharding.
 
-区块链分片。解决区块链可扩展性的另一个流行方向是将执行状态分割为固定数量的并行链，每条链由独立的验证者集合独立运行。这就是所谓的区块链分片。
+**区块链分片**。解决区块链可扩展性的另一个流行方向是分片。这一项技术将执行状态拆分为固定数量的平行链，每一条平行链由独立的验证者集合运行。
 
 While this approach is still being continuously improved, it has historically suffered from several challenges. First, using separate sets of validators creates a security tradeoff in so far as an attacker may selectively attack the weakest set in the system (e.g. to mint coins). Second, reorganizing the shards, i.e. the way user accounts are distributed across chains, is a complex operation that necessitates extensive network communication <a href='#References33'>[33]</a>. Lastly, when the number of shards is increased to support additional traffic, so does the amount of cross-chain messages that need to be exchanged <a href='#References26'>[26]</a>. In a system where each shard has a separate set of validators, cross-chain messages create significant delays that ultimately cancel out the effect of adding new chains [<a href='#References31'>31</a>, <a href='#References33'>33</a>].
 
-虽然这种方法仍在不断改进，但历史上它面临着几个挑战。首先，使用独立的验证者集会在安全性和攻击者可能有选择性地攻击系统中最弱的集合（例如造币）之间存在安全权衡。其次，重组分片，即用户账户在不同链上的分布方式，是一项复杂的操作，需要大量的网络通信。最后，当增加分片数量以支持额外的流量时，跨链消息的数量也会增加。在每个分片具有独立验证者集合的系统中，跨链消息会产生显著的延迟，最终抵消了增加新链的效果。
+区块链分片技术到今天仍在不断改进，这项技术的演进也曾因为一些困难的挑战颇显波折。首先，不同平行链使用不同的验证者集合的设计为区块链系统引入了安全妥协，攻击者无需攻击整个区块链系统，而只需要选择性攻击系统中最弱的环节（比如铸币）。其次，重组分片（即重新构造用户账户在不同平行链上的交易分布）是一项复杂的操作，其过程中涉及巨量的网络通信<a href='#References33'>[33]</a>。最后，当需要增加分片数量以达成更高的TPS，平行链之间的跨链消息数量也会随之增加<a href='#References26'>[26]</a>。由于平行链运行在独立的验证者集合，这将会导致跨链消息延迟的显著增加，由此抵消了增加新的分片带来的益处[<a href='#References31'>31</a>, <a href='#References33'>33</a>]。
 
 **Rollups.** Finally, a popular approach to solve blockspace scarcity has been rollup protocols, either optimistic or based on validity proofs (aka ZK rollups) <a href='#References11'>[11]</a>. At a high-level, both optimistic and validity (“ZK”) rollups consist of a layer-2 protocol that builds a sequence of large blocks, meant to be executed, compressed and confirmed on layer 1. Unfortunately, the process of confirming transactions on layer 1 takes a long time in both cases. Optimistic rollups must wait several days to allow for dispute resolution. Validity rollups must compress many layer-2 transactions at a time to pay for the layer-1 gas. In practice, gathering enough layer-2 transactions, computing a validity proof, and archiving transactions to enforce rigorous data availability takes several hours per layer-2 block.
 
-最后，解决区块空间不足的一种流行方法是Rollup协议，无论是乐观的还是基于有效性证明（也称为ZK Rollups）。在高层次上，无论是乐观的还是有效性（“ZK”）Rollups都包括一个第二层协议，构建了一个大块的序列，旨在在第一层执行、压缩和确认。不幸的是，在这两种情况下，在第一层上确认交易的过程都需要很长时间。乐观的Rollups必须等待数天以进行争议解决。有效性Rollups必须一次压缩多个第二层交易以支付第一层的燃气费用。实际上，收集足够的第二层交易、计算有效性证明以及归档交易以执行严格的数据可用性要花费每个第二层块数个小时。
+**Rollups**。最后，解决区块空间稀缺性问题的另一种流行方法是Rollup协议，通常基于Optimistic或有效性证明（也称为ZK rollup）实现<a href='#References11'>[11]</a>。从顶层设计来看，Optimistic和ZK Rollups都是Layer 2协议，他们在链下构建一系列大区块，这些大区块将在Layer 1执行、压缩和确认。不幸的是，在Optimistic和ZK Rollups两种场景下，Layer 1确认交易都需要大量的时间。Optimistic协议中解决争议（达成共识）需要几天的时间。ZK Rollups协议将许多Layer 2交易压缩，然后一次性提交到Layer 1确认，作为一条Layer 1交易支付gas。实践上，为每个Layer 2区块收集足够的Layer 2交易，计算有效性证明以及归档交易以强制执行严格的数据可用性（译者著：此处的翻译可能有些疑问）需要耗费几个小时。
+
+================================================================
 
 Long layer-1 confirmation times may encourage certain users to accept a security tradeoff and trust the finality of layer 2 for certain applications. In general, rollups must be trusted to carry on the protocol (i.e. for liveness) and to select transactions fairly (see Miner Extractable Value <a href='#References15'>[15]</a>). This concern is visible in the recent efforts to design decentralized rollup protocols <a href='#References29'>[29]</a>.
 
