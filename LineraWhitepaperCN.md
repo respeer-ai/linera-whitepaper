@@ -86,33 +86,35 @@ While this approach is still being continuously improved, it has historically su
 
 **Rollups**。最后，解决区块空间稀缺性问题的另一种流行方法是Rollup协议，通常基于Optimistic或有效性证明（也称为ZK rollup）实现<a href='#References11'>[11]</a>。从顶层设计来看，Optimistic和ZK Rollups都是Layer 2协议，他们在链下构建一系列大区块，这些大区块将在Layer 1执行、压缩和确认。不幸的是，在Optimistic和ZK Rollups两种场景下，Layer 1确认交易都需要大量的时间。Optimistic协议中解决争议（达成共识）需要几天的时间。ZK Rollups协议将许多Layer 2交易压缩，然后一次性提交到Layer 1确认，作为一条Layer 1交易支付gas。实践上，为每个Layer 2区块收集足够的Layer 2交易，计算有效性证明以及归档交易以强制执行严格的数据可用性（译者著：此处的翻译可能有些疑问）需要耗费几个小时。
 
-================================================================
-
 Long layer-1 confirmation times may encourage certain users to accept a security tradeoff and trust the finality of layer 2 for certain applications. In general, rollups must be trusted to carry on the protocol (i.e. for liveness) and to select transactions fairly (see Miner Extractable Value <a href='#References15'>[15]</a>). This concern is visible in the recent efforts to design decentralized rollup protocols <a href='#References29'>[29]</a>.
 
-第一层确认时间的延长可能会鼓励某些用户接受安全性权衡，并对某些应用程序信任第二层的终局性。通常，Rollups必须被信任来执行协议（即保持活跃性）并公平地选择交易（参见矿工可提取价值）。这一担忧在最近设计去中心化Rollup协议的努力中显而易见。
+由于Layer 1过长的确认时间，某些对于可响应性要求较高且能接受分片带来的安全妥协的应用选择信任Layer 2的执行结果，这些应用必须信任Rollups协议能够持续运行（以保持活跃）以及公平地选择交易（参见Miner Extractable Value<a href='#References15'>[15]</a>），最新的去中心化Rollup协议设计亦充分体现了这样的担忧。
 
 ### 1.4 Our mission  我们的使命
 
 Motivated by these observations, the Linera project was created to develop a new type of Web3 infrastructure based on three key principles:
 
-受到这些观察的启发，Linera项目旨在基于三个关键原则开发一种新型的基于Web3的基础设施：
+受到这些洞见的启发，我们创建了Linera项目。该项目基于如下三个关键原则，开发一种新的Web3基础设施：
 
 - (**i**) Build a secure infrastructure with predictable performance and responsiveness — by operating many chains in a single set of elastic validators;
 
-- (i) 通过在一组弹性验证者中运行多条链，构建一个具有可预测性能和响应性的安全基础设施；
+- (**i**) 构建一个具有可预测性能和响应性的安全基础设施。为达成此目标，多条链将运行在同一组可扩展的弹性验证器上；
+
 - (**ii**) Enable a rich ecosystem of scalable Web3 applications — by working on a new execution layer to make multi-chain programming mainstream;
 
-- (ii) 通过致力于新的执行层，使多链编程成为主流，从而实现可扩展的Web3应用程序丰富生态系统；
+- (**ii**) 针对可扩展的Web3应用构建丰富的生态。为达成此目标，Linera引入新的执行层，多链编程在该执行层上是主流编程方法；
+
 - (**iii**) Maximize decentralization — by ensuring that elastic validators are optimally incentivized and audited at scale by the community.
 
-- (iii) 通过确保弹性验证者得到最佳激励，并由社区进行规模化审计，最大程度地实现去中心化。
+- (**iii**) 最大程度去中心化。为达成此目标，弹性验证者将得到最佳激励，并由社区成员进行规模化审计。
 
 ### 1.5 Overview of the project  项目概况
 
 Linera is dedicated to delivering the following innovations to the blockchain community.
 
-Linera致力于为区块链社区带来以下创新。
+对于区块链社区而言，Linera将致力于引入下述创新点。
+
+==============================================================================
 
 #### 1.5.1 An integrated multi-chain system with elastic validators  具有弹性验证者的集成多链系统
 
