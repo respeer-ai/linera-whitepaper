@@ -114,54 +114,69 @@ Linera is dedicated to delivering the following innovations to the blockchain co
 
 对于区块链社区而言，Linera将致力于引入下述创新点。
 
-==============================================================================
+#### 1.5.1 An integrated multi-chain system with elastic validators
 
-#### 1.5.1 An integrated multi-chain system with elastic validators  具有弹性验证者的集成多链系统
+#### 1.5.1 一种基于弹性验证器的集成式多链系统
 
 To fulfill our vision of a Web3 infrastructure with predictable performance and responsiveness at scale, we have developed a new multi-chain protocol designed to take advantage of modern cloud infrastructures:
 
-为了实现我们对可预测性能和响应性的大规模Web3基础设施的愿景，我们开发了一种新的多链协议，旨在利用现代云基础设施：
+我们的愿景是实现一个大规模Web3基础设施，基于该基础设施开发的应用具有可预测的性能和响应性。为达成这样的目标，我们开发了一种新的多链协议，该协议的设计目的在于将现代云基础设施应用到Web3领域：
 
 - (**1**) In Linera, a validator is an elastic Web2-like service that validates and executes blocks of transactions in many chains in parallel. Because the number of chains (active and inactive) present in a Linera system is meant to be unlimited, we also call them microchains.
 
-- 在Linera中，验证者是一种弹性的类Web2服务，可以并行验证和执行多条链的交易区块。由于Linera系统中存在的链（活跃和非活跃）数量被设计为无限，我们也称它们为微型链。
+- (**1**) 在Linera中，验证器与Web2中的弹性服务相似，验证器并行验证和执行多条链的区块中的交易。在Linera系统中，链(包括活跃的和非活跃的)的数量是无限的，我们也将这样的链称为微链。
+
 - (**2**) The task of actively extending a microchain with new blocks is separate from validation or execution and is assumed by the owner(s) of each chain. Every Linera user is encouraged to create a chain that they own and place their accounts there.
 
 - 主动扩展微型链以添加新区块的任务与验证或执行是分离的，并由每个链的所有者（所有者）承担。鼓励每个Linera用户创建自己拥有的链，并将其帐户放置在其中。
+
+- (**2**) 向微链添加新区块的任务与交易的验证和执行是分离的，通常而言，只有链的所有者(们)(译者注：此处原文为owner(s)，表示微链可以有一个或多个owner)。每个Linera用户(译者注：此处user不仅指发起交易的人，也指与区块链交互的客户端)都可以创建自己的微链，用于管理他们自己的账户。
+
 - (**3**) Every validator manages all the microchains. (We call this the integrated multi-chain approach.) Microchains interact using asynchronous messages and otherwise run independently. As a result, validators can scale elastically by dividing their workload between many internal workers (aka shards). Asynchronous messages between chains are implemented efficiently using the internal network of each validator.
 
 - 每个验证者管理所有的微型链（这就是我们所谓的集成多链方法）。微型链使用异步消息进行交互，否则独立运行。因此，验证者可以通过在许多内部工作人员（即分片）之间分配其工作负载来弹性扩展。链与链之间的异步消息使用每个验证者的内部网络有效实现。
+
+- (**3**) 每一个验证器都管理所有微链(我们称为集成式多链方法)。微链之间通过异步消息交互，或独立运行。这样的设计使得验证器可以将负载拆分到多个集群内部成员(即分片)，以实现弹性伸缩。微链之间凭借验证器的内部网络执行异步消息通信，以确保效率。
+
 - (**4**) Microchains may differ in the way they accept new blocks. When extending their own chains, users submit new blocks directly to validators using a low-latency, mempool-free protocol inspired by reliable broadcast [<a href='#References7'>7</a>, <a href='#References12'>12</a>]. Applications that require more complex interactions between users may also rely on ephemeral microchains created on demand. In practice, only the public microchains owned by the Linera infrastructure necessitate a full BFT consensus protocol <a href='#References12'>[12]</a>.
 
-- 微型链可能在接受新区块的方式上有所不同。在扩展自己的链时，用户使用低延迟、无内存池的可靠广播协议直接将新区块提交给验证者。需要用户之间更复杂交互的应用程序还可能依赖根据需求创建的临时微型链。实际上，仅由Linera基础设施拥有的公共微型链需要完整的BFT共识协议。
+- (**4**) 微链有不同的方式接受新区块。在添加新区块时，用户通过低延迟、无内存池的可靠广播协议[<a href='#References7'>7</a>, <a href='#References12'>12</a>]将新区块提交给验证器。某些应用程序需要更加复杂的交互，可能灰根据需要创建临时链。实践上，只有Linera基础设施拥有的公共微链需要完整的BFT共识协议<a href='#References12'>[12]</a>。
+
 - (**5**) As a rule, validators do not interact—except for public chains owned by the infrastructure. Synchronization of microchains between validators is delegated to chain owners. This means that inactive microchains (those not creating blocks) have no cost for validators other than storage.
 
-- 通常情况下，验证者不会相互交互——除了基础设施拥有的公共链。微型链之间的同步由链所有者委托处理。这意味着对于验证者来说，不活跃的微型链（不创建区块的链）除了存储外没有额外成本。
+- (**5**) 原则上，验证器之间不会相互交互——除了Linera基础设施拥有的公共微链。验证器之间的微链同步通过微链的所有者实现。这意味着对于验证者来说，不活跃的微型链（不创建区块的链）除了存储外没有额外成本。
 
 Using elastic validators is a distinctive assumption of Linera. We intend for the Linera community to support a variety of cloud providers that new validators can choose from. Linera was initially inspired by the academic low-latency payment protocol FastPay developed at Meta <a href='#References7'>[7]</a>. Linera generalizes FastPay notably by turning user accounts into microchains, adding smart contracts, and supporting arbitrary asynchronous messages between chains. A more detailed description of the Linera multi-chain protocol is given in Section <a href='#Section2'>2</a>. We analyze the protocol in Section <a href='#Section3'>3</a>.
 
 Linera的弹性验证者是其独特的假设。我们希望Linera社区支持各种新验证者可以选择的云服务提供商。Linera最初受到Meta开发的学术低延迟支付协议FastPay的启发。Linera通过将用户帐户转换为微型链、添加智能合约并支持链之间任意异步消息，从而使FastPay得以推广。Linera多链协议的更多详细描述请参见第2节。我们将在第3节分析该协议。
 
-#### 1.5.2 Making multi-chain programming mainstream    使多链编程成为主流
+弹性验证器是Linera的独特假设。我们致力于支持更多可以作为验证器的云服务提供商，供Linera社区选择。Linera最初受到Meta开发的低延迟支付协议FastPay启发。在此基础上，Linera将用户账户转换为微链、添加智能合约并支持微链之间任意异步消息通信，大大丰富了FastPay协议。Linera多链协议的更多详细描述请参见第<a href='#Section2'>2</a>节。我们将在第<a href='#Section3'>3</a>节分析该协议。
+
+#### 1.5.2 Making multi-chain programming mainstream
+
+#### 1.5.2 使多链编程成为主流
 
 Linera integrates many chains in a unique set of validators. This greatly facilitates crosschain communication thanks to the internal network of each validator. For the first time, a variety of Web3 applications have the opportunity to scale elastically by taking advantage of a cheap and efficient multi-chain architecture. To promote the adoption of multi-chain programming, we have made the following design choices:
 
-Linera将许多链集成到一个独特的验证者集合中。这得益于每个验证者的内部网络，极大地促进了跨链通信。首次，各种Web3应用程序有机会利用廉价高效的多链架构弹性扩展。为了推动多链编程的采用，我们做出了以下设计选择：
+Linera使用同一个验证者集合管理全部微链。大规模的跨链通信通过单个验证者的内部网络实现，Web3应用从此能够利用廉价高效的基础设施弹性扩容。为了推动多链编程的采用，我们做出了以下设计选择：
 
 - (**6**) The execution model of Linera is designed to be language-agnostic and developerfriendly. The initial SDK of Linera will be based on Wasm and will target the Rust programming language.
-- Linera的执行模型旨在与编程语言无关且对开发者友好。Linera的初始软件开发工具包（SDK）将基于Wasm，并面向Rust编程语言。
+
+- (**6**) Linera的执行模型是编程语言无关的，且对开发者友好。初始版本的Linera SDK将基于Wasm，面向Rust编程语言。
 
 - (**7**) Linera applications are composable and multi-chain. Once an application is created, it can run on demand on any chain. The running instances of the same application coordinate across chains using asynchronous messages and pub/sub channels. Applications that are running in the same microchain interact using cross-contract calls and ephemeral session objects.
 
-- Linera应用程序是可组合的，并支持多链操作。一旦应用程序被创建，它可以根据需求在任何链上运行。相同应用程序的运行实例使用异步消息和发布/订阅通道在链间进行协调。在同一微型链中运行的应用程序通过跨合约调用和临时会话对象进行交互。 
+- (**7**) Linera应用程序是组合式的多链应用。应用程序被创建吼，可以按需在任何微链上运行。同一应用程序在不同的微链上有不同的运行实例，这些运行实例通过异步消息和发布/订阅频道通信。同一微链上的不同应用程序通过跨合约调用和临时会话对象进行交互。
 
 Session objects in Linera are inspired by resources in the Move language <a href='#References9'>[9]</a>. Staticallytyped resources in Move have been proposed to help with composability <a href='#References25'>[25]</a>. In Linera, resource-like composability is achieved using session handles and runtime checks. For instance, to send tokens, a Linera contract will be able to transfer ownership of a temporary session containing the tokens.
 
-Linera中的会话对象受到Move语言中资源的启发。Move语言中的静态类型资源已被提议用于帮助实现组合性。在Linera中，会话处理和运行时检查实现了类似资源的组合性。例如，要发送代币，Linera合约将能够转移包含代币的临时会话的所有权。
+Linera中的会话对象受到Move语言中资源的启发<a href='#References9'>[9]</a>。Move语言中的静态类型资源被提议用于帮助实现组合性。在Linera中，会话处理和运行时检查实现了类似资源的组合性。例如，要发送代币，Linera合约能够转移包含该代币的临时会话的所有权。
 
 In general, building a large community of developers is a major factor in the adoption of blockchain infrastructures. Because the Wasm ecosystem is continuously improving its multi-language tooling <a href='#References4'>[4]</a>, it offers the long-term possibility for Linera to serve several developer communities. See Section <a href='#Section4'>4</a> for a more detailed discussion of the programming model of Linera.
 
-总的来说，在区块链基础设施的采用中，建立一个庞大的开发者社区是一个重要因素。由于Wasm生态系统不断改进其多语言工具，长期来看，Linera有可能服务于多个开发者社区。更详细的Linera编程模型讨论请参见第4节。
+总的来说，构建大型的开发者社区是区块链基础设施被采用的一个重要因素。鉴于Wasm生态对于多语言工具的持续改进<a href='#References4'>[4]</a>，我们认为Wasm能够支撑Linera长期服务于不同的开发者社区。我们将在第<a href='#Section4'>4</a>节讨论更详细的Linera编程模型。
+
+=====================================================================================================================
 
 #### 1.5.3 Robust decentralization for elastic validators   弹性验证者的稳健去中心化
 
