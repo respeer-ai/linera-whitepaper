@@ -116,7 +116,7 @@ Linera中的会话对象受到Move语言中资源的启发<a href='#References9'
 
 #### 1.5.3 弹性验证者的可靠去中心化
 
-经典的“区块链不可能三角”<a href='#References10'>[10]</a>阐述了同时实现扩展性、安全性和去中心化的困难。这样的的观点在验证器能力恒定的前提下确实成立，然而，我们认为，对于如何定义和实施能够满足去中心化要求的弹性验证器这一方向，我们还没有做出足够的努力。
+经典的“区块链不可能三角”<a href='#References10'>[10]</a>阐述了同时实现扩展性、安全性和去中心化的困难。这样的的观点在验证器能力恒定的前提下确实成立，然而我们认为，对于如何定义和实施能够满足去中心化要求的弹性验证器这一方向，我们还没有做出足够的努力。
 
 - (**8**) Linera依赖委托权益证明(DPoS)保障安全性，并支持定期更换验证者集合。得益于区块的链接，任何微链的历史交易、跨链消息和执行状态都是防篡改的。
 
@@ -126,49 +126,29 @@ Linera中的会话对象受到Move语言中资源的启发<a href='#References9'
 
 ## 2 Linera多链协议
 
-===========================================================
+<a name='Section2'>我们</a>将在这一章介绍Linera基础设施的核心：多链协议。本章的主旨在于阐明该协议的主要思想，因此将不会对协议做详尽分析说明。我们将在第<a href='#Section3'>3</a>章中非正式地分析该协议，并在第<a href='#Section4'>4</a>章讨论编程模型。
 
-<a name='Section2'>We</a> now introduce the multi-chain protocol at the core of the Linera infrastructure. This technical description is meant to illustrate the main ideas of the protocol without being exhaustive. We analyze the protocol informally in Section <a href='#Section3'>3</a> and discuss the programming model in Section <a href='#Section4'>4</a>.
+### 2.1 参与者：用户、验证者、链所有者
 
-我们现在介绍了Linera基础设施核心的多链协议。这个技术描述旨在阐明协议的主要思想，但并不详尽。我们在第3节非正式地分析该协议，并在第4节讨论编程模型。
+Linera协议的目标，在于提供一个计算基础设施。应用开发者可以在该基础设施上创建去dApps，终端用户可以安全高效地访问dApps。
 
-### 2.1 Participants: users, validators, chain owners    参与者：用户、验证者、链所有者
+和其他区块链系统一样，Linera应用程序的状态被复制到多个部分可信节点，这些节点称为验证者。应用程序通过将交易插入到新区块，并将新区块提交给验证者更新应用程序状态。
 
-The Linera protocol aims to provide a computing infrastructure where developers create decentralized applications and end users interact with them in a secure and efficient way.
+为了支持扩展性，Linera不再使用单链，取而代之的是集成式的多链系统。该系统拥有多条并行执行的链（称之为微链），交易被组织到这些并行执行的微链区块中。这意味着Linera应用程序的状态通常分布在不同的微链上。特别需要指出的是，除非正在进行重新配置(<a href='#Section2.9'>2.9</a>)，Linera中的所有微链都使用同一组验证器。
 
-Linera协议旨在提供一个计算基础设施，开发者可以创建去中心化应用程序，并且最终用户可以以安全高效的方式与其进行交互。
+在Linera中，向区块链添加新区块与验证区块的任务是分离的，新区块由链的所有者创建。事实上，链的所有者可以是协议的任何参与者。由于Linera验证器负责验证区块，链的所有者可以只需要实现客户端功能即可。下面是一些链所有者的示例：
 
-As usual for blockchain systems, the state of an application in Linera is replicated across several partially-trusted nodes called validators. Modifying the state of an application is done by inserting a transaction into a new block and submitting the new block to the validators.
+- 希望在不同应用程序中对自己的用户拥有更多控制权的终端用户；
 
-与区块链系统一样，Linera中应用程序的状态被复制到多个部分可信节点，称为验证者。修改应用程序的状态是通过向新区块插入交易并将新区块提交给验证者来完成的。
+- 希望运行临时链(例如用于原子交换)的终端用户；
 
-To support scalability requirements, Linera is designed from the start as an integrated multi-chain system: instead of using a single chain, transactions are organized in many parallel chains of blocks, called microchains. This means that the state of Linera applications is typically distributed across chains. Importantly, unless a reconfiguration is in progress (Section <a href='#Section2.9'>2.9</a>), a single set of validators is in use for all the microchains.
+- 希望将代码部署到链上以创建应用，或管理应用程序的开发者；
 
-为了支持可扩展性需求，Linera从一开始就被设计成一个集成的多链系统：不是使用单一链，而是将交易组织在许多并行的区块链中，称为微型链。这意味着Linera应用程序的状态通常分布在各个链上。需要指出的是，除非正在进行重新配置（第2.9节），一组验证者用于所有微型链。
+- 运行公开链的验证者(例如用于基础设施)。
 
-In Linera, the task of extending a chain with new blocks is separate from the task of validating blocks. Proposing blocks is assumed by the owners of a microchain. In practice, the owner(s) of a chain can be any participant to the protocol. Because Linera validators act as a block validation service, chain owners may also be referred to as clients. Examples of chain owners include:
+最后，我们将阐述Linera如何管理当前验证者集(也称为委员会)。第<a href='#Section4'>4</a>章中我们将讨论Linera的编程模型，此外，审计员角色将在第<a href='#Section5'>5</a>章讨论。
 
-在Linera中，扩展链的任务与验证区块的任务是分开的。提出区块的任务由微型链的所有者承担。实际上，链的所有者可以是协议的任何参与者。因为Linera的验证者充当区块验证服务，链所有者也可以被称为客户端。链所有者的示例包括：
-
-- End users who wish more control over their accounts in different applications;
-
-- 希望在不同应用程序中更好地控制其账户的最终用户；
-- 
-- End users who wish to operate a temporary chain (e.g. for an atomic swap);
-
-- 希望运行临时链（例如用于原子交换）的最终用户；
-- 
-- Developers who wish to publish code or manage applications;
-
-- 希望发布代码或管理应用程序的开发者；
-
-- Validators who collectively run a public chain (e.g. for infrastructure purposes).
-
-- 共同运行公共链的验证者（例如用于基础设施目的）。
-
-The last use case is how Linera manages the current set of validators, also known as the committee. The programming model of Linera is presented in Section <a href='#Section4'>4</a>. The additional role of auditors is discussed in Section <a href='#Section5'>5</a>.
-
-最后一个用例是Linera如何管理当前一组验证者，也称为委员会。Linera的编程模型见第4节。审计员的额外角色在第5节中进行了讨论。
+===============================================
 
 ### 2.2 Security model  安全模型
 
