@@ -176,26 +176,31 @@ In general, building a large community of developers is a major factor in the ad
 
 总的来说，构建大型的开发者社区是区块链基础设施被采用的一个重要因素。鉴于Wasm生态对于多语言工具的持续改进<a href='#References4'>[4]</a>，我们认为Wasm能够支撑Linera长期服务于不同的开发者社区。我们将在第<a href='#Section4'>4</a>节讨论更详细的Linera编程模型。
 
-=====================================================================================================================
+#### 1.5.3 Robust decentralization for elastic validators
 
-#### 1.5.3 Robust decentralization for elastic validators   弹性验证者的稳健去中心化
+#### 1.5.3 弹性验证者的可靠去中心化
 
 The classical “blockchain trilemma” <a href='#References10'>[10]</a> asserts the difficulty of simultaneously achieving scalability, security, and decentralization. While this observation certainly holds for validators of fixed capacity, we believe that insufficient efforts have been made in the definition and implementation of a satisfying notion of decentralization for elastic validators.
 
-经典的“区块链三难问题”声称同时实现可扩展性、安全性和去中心化的困难。虽然这一观察在固定容量的验证者方面确实成立，但我们认为对于弹性验证者而言，在定义并实施令人满意的去中心化概念方面付出的努力还不够。
+经典的“区块链不可能三角”<a href='#References10'>[10]</a>阐述了同时实现扩展性、安全性和去中心化的困难。这样的的观点在验证器能力恒定的前提下确实成立，然而，我们认为，对于如何定义和实施能够满足去中心化要求的弹性验证器这一方向，我们还没有做出足够的努力。
 
 - (**8**) Linera relies on delegated proof of stake (DPoS) for security and supports regularly changing sets of validators. Thanks to the chaining of blocks, the past transactions, the cross-chain messages, and the execution state of each microchain are tamper-resistant.
 
-- Linera依赖委托权益证明（DPoS）来保障安全性，并支持定期更换验证者集合。由于区块的链接，每个微型链的过去交易、跨链消息和执行状态都是防篡改的。
+- (**8**) Linera依赖委托权益证明(DPoS)保障安全性，并支持定期更换验证者集合。得益于区块的链接，任何微链的历史交易、跨链消息和执行状态都是防篡改的。
+
 - (**9**) Microchains are designed to be auditable independently. This means that Linera as a whole will be auditable in a distributed way by the community, using only commodity hardware.
 
-- 微型链被设计为可以独立进行审计。这意味着Linera作为整体将以分布式方式通过社区进行审计，只使用通用硬件。 
+- (**9**) 微链可以被独立审计。这意味着作为整体的Linera可以由社区进行分布式审计，社区成员仅需要通用硬件便可参与。
 
-Using large validators for performance and maintaining decentralization using communitydriven auditors has been discussed by the blockchain community in the context of rollups <a href='#References10'>[10]</a>. As the Linera project makes progress, we will continue to monitor the technical advances in the field of validity (“ZK”) proofs and chain compression. Decentralization of Linera is further discussed in Section <a href='#Section5'>5</a>.
+Using large validators for performance and maintaining decentralization using community driven auditors has been discussed by the blockchain community in the context of rollups <a href='#References10'>[10]</a>. As the Linera project makes progress, we will continue to monitor the technical advances in the field of validity (“ZK”) proofs and chain compression. Decentralization of Linera is further discussed in Section <a href='#Section5'>5</a>.
 
-在满足性能所使用大型验证者的同时，利用社区驱动的审计者维持去中心化已经在Rollup的背景下被区块链社区讨论过。随着Linera项目的进展，我们将继续关注有效性（“ZK”）证明和链压缩领域的技术进步。Linera的去中心化将在第5节进一步讨论。
+文献<a href='#References10'>[10]</a>在Roolups场景下讨论了使用高性能验证器，同时由社区驱动的审计保持去中心化。随着Linera项目进展，我们将继续关注有效性（“ZK”）证明和链压缩领域的技术进步。我们将在第<a href='#Section5'>5</a>节进一步讨论Linera的去中心化。
 
-## 2 The Linera Multi-Chain Protocol   Linera多链协议
+## 2 The Linera Multi-Chain Protocol
+
+## 2 Linera多链协议
+
+===========================================================
 
 <a name='Section2'>We</a> now introduce the multi-chain protocol at the core of the Linera infrastructure. This technical description is meant to illustrate the main ideas of the protocol without being exhaustive. We analyze the protocol informally in Section <a href='#Section3'>3</a> and discuss the programming model in Section <a href='#Section4'>4</a>.
 
