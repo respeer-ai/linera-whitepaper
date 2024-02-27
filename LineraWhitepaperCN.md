@@ -46,107 +46,57 @@ A [**跨链通信**](<>)<br>
 ## 1 概述
 ### 1.1 Web3对可预测性能和响应能力的需求
 
-<a name='Section1'>Thanks</a> to blockchain technologies, the next iteration of the Internet, Web3, will empower users with a new generation of asset-aware applications and give them more democratic control over the digital economy. However, developing Web3 applications with a great user experience is currently a challenging task. One of the issues is reliability and responsiveness at scale: when too many users are active, blockchains may stop responding or demand punishing fees. In general, application developers want their infrastructure programming interfaces to be easy to use and predictable, disregarding the traffic caused by other applications. Centralized API providers <a href='#References30'>[30]</a> have been proposed to facilitate programming on top of popular blockchains, but such providers need to be trusted and will not improve the performance and the fees of the underlying blockchains. Linera aims to close the gap between centralized and decentralized applications by delivering a blockchain infrastructure that guarantees performance and responsiveness at scale.
-
 得益于区块链技术的发展，下一代互联网Web3将赋予用户新一代资产感知应用，并使他们在数字经济中拥有更多的民主控制权。然而，开发具有良好用户体验的Web3应用目前是一项具有挑战性的任务。其中一个问题是规模应用的可靠性和响应性：当太多用户活跃时，区块链可能停止响应或需要支付昂贵的交易费。总体而言，应用开发者希望他们的基础设施编程接口易于使用且可预测，而不受其他应用程序引起的流量干扰。业内已经存在集中式API提供者来简化在流行的区块链上进行编程的过程，但这样的提供者需要被使用者信任，并且也不能改善底层区块链的性能和费用。Linera的目标是通过提供一种区块链基础设施，以保证规模应用的性能和响应能力，来弥合集中式和去中心化应用之间的差距。
 
 ### 1.2 区块空间稀缺问题
-
-The main reason why traditional blockchains have unpredictable worst-case outcomes in terms of fees and delays can be explained as the blockspace scarcity problem. Namely, in a blockchain composed of a single chain of blocks, users must compete to have their transactions selected into the next block. Yet, at the same time, the production rate and the size of blocks are limited by the performance of the consensus protocol, the network, and the execution layer. As a result, during a peak of traffic (say, an NFT airdrop), users may be outpriced by others or be delayed for long periods of time—during which the infrastructure is effectively unavailable to them <a href='#References21'>[21]</a>.
 
 在现有区块链中，交易手续费和延迟的最坏情况是不可预测的， 其主要原因可以解释为区块空间稀缺问题。换句话说，在只包含一条链的区块链中，为使其交易被选择进入下一个区块，发起交易的用户之间需要竞争。然而，与此同时，区块的生产速率和大小受到共识协议、网络和执行层性能的限制。因此，在交易高峰期（例如NFT空投）期间，用户的交易可能因为其他用户的交易手续费出价远远超过其定价范围而失败，或延迟很长时间才能被确认—在此期间，基础设施对他们实际上是不可用的。
 
 ### 1.3 现有方法的不足之处
 
-Unsurprisingly, many blockchain infrastructures have been proposed over the years with scalability improvements in mind. We provide here a high-level summary of the most common approaches, without attempting to be exhaustive.
-
 毫无疑问，多年来已经提出了许多以提高可扩展性为目标的区块链基础架构。在这里，我们提供对常见方法的高阶总结，而不试图详尽无遗。
-
-**Faster single chain.** The production rate of blocks in a single chain is typically limited by the data propagation delay between validators <a href='#References18'>[18]</a>. Historically, block size has been the first parameter to be adjusted to maximize transaction throughput in function of the security requirements and the network constraints [<a href='#References18'>18</a>, <a href='#References20'>20</a>]. Thanks to recent advances in BFT consensus protocols (e.g. <a href='#References22'>[22]</a>), nowadays the new bottleneck for the transaction rate appears to be the sequential execution of transactions rather than consensus ordering.
 
 **更快的单链**。单链中的区块生产速度通常受验证者之间数据传播延迟的限制。早前，为了在满足安全需求和网络约束的条件下达成更高TPS，区块大小是第一个被调整的参数。得益于拜占庭容错（BFT）共识协议的最新进展，今天TPS的新瓶颈看起来是交易的顺序执行而不是共识排序（从消息池中选择合适的交易进入区块以待确认）。
 
-Anticipating that many transactions contained in a block should be independent in practice, several recent projects have developed architectures able to execute a subset of transactions in parallel on several processing units <a href='#References19'>[19]</a>. While this certainly results in higher transaction rates, such systems are still characterized by a maximum number of transactions per second in the low 6 digits. Moreover, the effective transaction rate greatly depends on the proportion of transactions that are actually independent in each block <a href='#References26'>[26]</a>. Altogether, this makes it impossible to guarantee fees and/or delays in advance for a user without any assumption about the activity of the other users.
-
 我们可以预见的是，一个区块中包含的许多交易应该是相互独立的（译者注：这并不意味着一个区块中包含的所有交易都是相互独立的，仅表明大部分交易相互独立。例如，同一账号在一个区块内发送两次转账交易，则这两次转账交易并不独立，单该账号所有交易与其他账号的交易在本区块内是独立的）。基于这样的预期，文献19中的一些最近出现的项目已经开发出将一个区块中的交易分成不同的子集并行执行的架构<a href='#References19'>[19]</a>。毫无疑问，上述并行执行架构能够大大提升TPS，但依赖这样的架构依然难以达成超过6位数的TPS。此外，并行执行结构的TPS很大程度上取决于每个区块中相互独立的交易比例<a href='#References26'>[26]</a>，然而发送交易的用户不能事先知道该交易将被哪一个区块打包，亦不知该区块中其他用户发送的交易是否相互独立，由此导致用户无法确认该交易的执行费用和执行延迟。
-
-Lastly, in a high-throughput chain, auditing validators is made harder by the combination of CPU requirements for execution and networking requirements for data synchronization. Concretely, the sheer number of sequential transactions may prevent members of the community with only commodity hardware from replaying transactions fast enough to verify the work of validators in a meaningful way <a href='#References24'>[24]</a>.
 
 最后，在高TPS的区块链中，由于执行交易需要CPU（计算资源）具有较高的计算速度，交易数据同步需要较大的网络带宽，使得对验证者的审计变得更加困难。具体而言，通用由于硬件的计算速度和下载能力不足，不能快速重放交易，大部分只拥有通用硬件的社区成员因此不能便捷地参与验证者的审计。
 
-**Blockchain sharding.** Another popular direction to address blockchain scalability has consisted in dividing the execution state between a fixed number of parallel chains, each being run independently by a separate set of validators. This is called blockchain sharding.
-
 **区块链分片**。解决区块链可扩展性的另一个流行方向是分片。这一项技术将执行状态拆分为固定数量的平行链，每一条平行链由独立的验证者集合运行。
-
-While this approach is still being continuously improved, it has historically suffered from several challenges. First, using separate sets of validators creates a security tradeoff in so far as an attacker may selectively attack the weakest set in the system (e.g. to mint coins). Second, reorganizing the shards, i.e. the way user accounts are distributed across chains, is a complex operation that necessitates extensive network communication <a href='#References33'>[33]</a>. Lastly, when the number of shards is increased to support additional traffic, so does the amount of cross-chain messages that need to be exchanged <a href='#References26'>[26]</a>. In a system where each shard has a separate set of validators, cross-chain messages create significant delays that ultimately cancel out the effect of adding new chains [<a href='#References31'>31</a>, <a href='#References33'>33</a>].
 
 区块链分片技术到今天仍在不断改进，这项技术的演进也曾因为一些困难的挑战颇显波折。首先，不同平行链使用不同的验证者集合的设计为区块链系统引入了安全妥协，攻击者无需攻击整个区块链系统，而只需要选择性攻击系统中最弱的环节（比如铸币）。其次，重组分片（即重新构造用户账户在不同平行链上的交易分布）是一项复杂的操作，其过程中涉及巨量的网络通信<a href='#References33'>[33]</a>。最后，当需要增加分片数量以达成更高的TPS，平行链之间的跨链消息数量也会随之增加<a href='#References26'>[26]</a>。由于平行链运行在独立的验证者集合，这将会导致跨链消息延迟的显著增加，由此抵消了增加新的分片带来的益处[<a href='#References31'>31</a>, <a href='#References33'>33</a>]。
 
-**Rollups.** Finally, a popular approach to solve blockspace scarcity has been rollup protocols, either optimistic or based on validity proofs (aka ZK rollups) <a href='#References11'>[11]</a>. At a high-level, both optimistic and validity (“ZK”) rollups consist of a layer-2 protocol that builds a sequence of large blocks, meant to be executed, compressed and confirmed on layer 1. Unfortunately, the process of confirming transactions on layer 1 takes a long time in both cases. Optimistic rollups must wait several days to allow for dispute resolution. Validity rollups must compress many layer-2 transactions at a time to pay for the layer-1 gas. In practice, gathering enough layer-2 transactions, computing a validity proof, and archiving transactions to enforce rigorous data availability takes several hours per layer-2 block.
-
 **Rollups**。最后，解决区块空间稀缺性问题的另一种流行方法是Rollup协议，通常基于Optimistic或有效性证明（也称为ZK rollup）实现<a href='#References11'>[11]</a>。从顶层设计来看，Optimistic和ZK Rollups都是Layer 2协议，他们在链下构建一系列大区块，这些大区块将在Layer 1执行、压缩和确认。不幸的是，在Optimistic和ZK Rollups两种场景下，Layer 1确认交易都需要大量的时间。Optimistic协议中解决争议（达成共识）需要几天的时间。ZK Rollups协议将许多Layer 2交易压缩，然后一次性提交到Layer 1确认，作为一条Layer 1交易支付gas。实践上，为每个Layer 2区块收集足够的Layer 2交易，计算有效性证明以及归档交易以强制执行严格的数据可用性（译者著：此处的翻译可能有些疑问）需要耗费几个小时。
-
-Long layer-1 confirmation times may encourage certain users to accept a security tradeoff and trust the finality of layer 2 for certain applications. In general, rollups must be trusted to carry on the protocol (i.e. for liveness) and to select transactions fairly (see Miner Extractable Value <a href='#References15'>[15]</a>). This concern is visible in the recent efforts to design decentralized rollup protocols <a href='#References29'>[29]</a>.
 
 由于Layer 1过长的确认时间，某些对于可响应性要求较高且能接受分片带来的安全妥协的应用选择信任Layer 2的执行结果，这些应用必须信任Rollups协议能够持续运行（以保持活跃）以及公平地选择交易（参见Miner Extractable Value<a href='#References15'>[15]</a>），最新的去中心化Rollup协议设计亦充分体现了这样的担忧。
 
 ### 1.4 Our mission  我们的使命
 
-Motivated by these observations, the Linera project was created to develop a new type of Web3 infrastructure based on three key principles:
-
 受到这些洞见的启发，我们创建了Linera项目。该项目基于如下三个关键原则，开发一种新的Web3基础设施：
-
-- (**i**) Build a secure infrastructure with predictable performance and responsiveness — by operating many chains in a single set of elastic validators;
 
 - (**i**) 构建一个具有可预测性能和响应性的安全基础设施。为达成此目标，多条链将运行在同一组可扩展的弹性验证器上；
 
-- (**ii**) Enable a rich ecosystem of scalable Web3 applications — by working on a new execution layer to make multi-chain programming mainstream;
-
 - (**ii**) 针对可扩展的Web3应用构建丰富的生态。为达成此目标，Linera引入新的执行层，多链编程在该执行层上是主流编程方法；
-
-- (**iii**) Maximize decentralization — by ensuring that elastic validators are optimally incentivized and audited at scale by the community.
 
 - (**iii**) 最大程度去中心化。为达成此目标，弹性验证者将得到最佳激励，并由社区成员进行规模化审计。
 
 ### 1.5 Overview of the project  项目概况
 
-Linera is dedicated to delivering the following innovations to the blockchain community.
-
 对于区块链社区而言，Linera将致力于引入下述创新点。
-
-#### 1.5.1 An integrated multi-chain system with elastic validators
 
 #### 1.5.1 一种基于弹性验证器的集成式多链系统
 
-To fulfill our vision of a Web3 infrastructure with predictable performance and responsiveness at scale, we have developed a new multi-chain protocol designed to take advantage of modern cloud infrastructures:
-
 我们的愿景是实现一个大规模Web3基础设施，基于该基础设施开发的应用具有可预测的性能和响应性。为达成这样的目标，我们开发了一种新的多链协议，该协议的设计目的在于将现代云基础设施应用到Web3领域：
-
-- (**1**) In Linera, a validator is an elastic Web2-like service that validates and executes blocks of transactions in many chains in parallel. Because the number of chains (active and inactive) present in a Linera system is meant to be unlimited, we also call them microchains.
 
 - (**1**) 在Linera中，验证器与Web2中的弹性服务相似，验证器并行验证和执行多条链的区块中的交易。在Linera系统中，链(包括活跃的和非活跃的)的数量是无限的，我们也将这样的链称为微链。
 
-- (**2**) The task of actively extending a microchain with new blocks is separate from validation or execution and is assumed by the owner(s) of each chain. Every Linera user is encouraged to create a chain that they own and place their accounts there.
-
-- 主动扩展微型链以添加新区块的任务与验证或执行是分离的，并由每个链的所有者（所有者）承担。鼓励每个Linera用户创建自己拥有的链，并将其帐户放置在其中。
-
 - (**2**) 向微链添加新区块的任务与交易的验证和执行是分离的，通常而言，只有链的所有者(们)(译者注：此处原文为owner(s)，表示微链可以有一个或多个owner)。每个Linera用户(译者注：此处user不仅指发起交易的人，也指与区块链交互的客户端)都可以创建自己的微链，用于管理他们自己的账户。
-
-- (**3**) Every validator manages all the microchains. (We call this the integrated multi-chain approach.) Microchains interact using asynchronous messages and otherwise run independently. As a result, validators can scale elastically by dividing their workload between many internal workers (aka shards). Asynchronous messages between chains are implemented efficiently using the internal network of each validator.
-
-- 每个验证者管理所有的微型链（这就是我们所谓的集成多链方法）。微型链使用异步消息进行交互，否则独立运行。因此，验证者可以通过在许多内部工作人员（即分片）之间分配其工作负载来弹性扩展。链与链之间的异步消息使用每个验证者的内部网络有效实现。
 
 - (**3**) 每一个验证器都管理所有微链(我们称为集成式多链方法)。微链之间通过异步消息交互，或独立运行。这样的设计使得验证器可以将负载拆分到多个集群内部成员(即分片)，以实现弹性伸缩。微链之间凭借验证器的内部网络执行异步消息通信，以确保效率。
 
-- (**4**) Microchains may differ in the way they accept new blocks. When extending their own chains, users submit new blocks directly to validators using a low-latency, mempool-free protocol inspired by reliable broadcast [<a href='#References7'>7</a>, <a href='#References12'>12</a>]. Applications that require more complex interactions between users may also rely on ephemeral microchains created on demand. In practice, only the public microchains owned by the Linera infrastructure necessitate a full BFT consensus protocol <a href='#References12'>[12]</a>.
-
 - (**4**) 微链有不同的方式接受新区块。在添加新区块时，用户通过低延迟、无内存池的可靠广播协议[<a href='#References7'>7</a>, <a href='#References12'>12</a>]将新区块提交给验证器。某些应用程序需要更加复杂的交互，可能灰根据需要创建临时链。实践上，只有Linera基础设施拥有的公共微链需要完整的BFT共识协议<a href='#References12'>[12]</a>。
 
-- (**5**) As a rule, validators do not interact—except for public chains owned by the infrastructure. Synchronization of microchains between validators is delegated to chain owners. This means that inactive microchains (those not creating blocks) have no cost for validators other than storage.
-
 - (**5**) 原则上，验证器之间不会相互交互——除了Linera基础设施拥有的公共微链。验证器之间的微链同步通过微链的所有者实现。这意味着对于验证者来说，不活跃的微型链（不创建区块的链）除了存储外没有额外成本。
-
-Using elastic validators is a distinctive assumption of Linera. We intend for the Linera community to support a variety of cloud providers that new validators can choose from. Linera was initially inspired by the academic low-latency payment protocol FastPay developed at Meta <a href='#References7'>[7]</a>. Linera generalizes FastPay notably by turning user accounts into microchains, adding smart contracts, and supporting arbitrary asynchronous messages between chains. A more detailed description of the Linera multi-chain protocol is given in Section <a href='#Section2'>2</a>. We analyze the protocol in Section <a href='#Section3'>3</a>.
 
 Linera的弹性验证者是其独特的假设。我们希望Linera社区支持各种新验证者可以选择的云服务提供商。Linera最初受到Meta开发的学术低延迟支付协议FastPay的启发。Linera通过将用户帐户转换为微型链、添加智能合约并支持链之间任意异步消息，从而使FastPay得以推广。Linera多链协议的更多详细描述请参见第2节。我们将在第3节分析该协议。
 
@@ -156,23 +106,13 @@ Linera的弹性验证者是其独特的假设。我们希望Linera社区支持�
 
 #### 1.5.2 使多链编程成为主流
 
-Linera integrates many chains in a unique set of validators. This greatly facilitates crosschain communication thanks to the internal network of each validator. For the first time, a variety of Web3 applications have the opportunity to scale elastically by taking advantage of a cheap and efficient multi-chain architecture. To promote the adoption of multi-chain programming, we have made the following design choices:
-
 Linera使用同一个验证者集合管理全部微链。大规模的跨链通信通过单个验证者的内部网络实现，Web3应用从此能够利用廉价高效的基础设施弹性扩容。为了推动多链编程的采用，我们做出了以下设计选择：
-
-- (**6**) The execution model of Linera is designed to be language-agnostic and developerfriendly. The initial SDK of Linera will be based on Wasm and will target the Rust programming language.
 
 - (**6**) Linera的执行模型是编程语言无关的，且对开发者友好。初始版本的Linera SDK将基于Wasm，面向Rust编程语言。
 
-- (**7**) Linera applications are composable and multi-chain. Once an application is created, it can run on demand on any chain. The running instances of the same application coordinate across chains using asynchronous messages and pub/sub channels. Applications that are running in the same microchain interact using cross-contract calls and ephemeral session objects.
-
 - (**7**) Linera应用程序是组合式的多链应用。应用程序被创建吼，可以按需在任何微链上运行。同一应用程序在不同的微链上有不同的运行实例，这些运行实例通过异步消息和发布/订阅频道通信。同一微链上的不同应用程序通过跨合约调用和临时会话对象进行交互。
 
-Session objects in Linera are inspired by resources in the Move language <a href='#References9'>[9]</a>. Staticallytyped resources in Move have been proposed to help with composability <a href='#References25'>[25]</a>. In Linera, resource-like composability is achieved using session handles and runtime checks. For instance, to send tokens, a Linera contract will be able to transfer ownership of a temporary session containing the tokens.
-
 Linera中的会话对象受到Move语言中资源的启发<a href='#References9'>[9]</a>。Move语言中的静态类型资源被提议用于帮助实现组合性。在Linera中，会话处理和运行时检查实现了类似资源的组合性。例如，要发送代币，Linera合约能够转移包含该代币的临时会话的所有权。
-
-In general, building a large community of developers is a major factor in the adoption of blockchain infrastructures. Because the Wasm ecosystem is continuously improving its multi-language tooling <a href='#References4'>[4]</a>, it offers the long-term possibility for Linera to serve several developer communities. See Section <a href='#Section4'>4</a> for a more detailed discussion of the programming model of Linera.
 
 总的来说，构建大型的开发者社区是区块链基础设施被采用的一个重要因素。鉴于Wasm生态对于多语言工具的持续改进<a href='#References4'>[4]</a>，我们认为Wasm能够支撑Linera长期服务于不同的开发者社区。我们将在第<a href='#Section4'>4</a>节讨论更详细的Linera编程模型。
 
@@ -180,23 +120,13 @@ In general, building a large community of developers is a major factor in the ad
 
 #### 1.5.3 弹性验证者的可靠去中心化
 
-The classical “blockchain trilemma” <a href='#References10'>[10]</a> asserts the difficulty of simultaneously achieving scalability, security, and decentralization. While this observation certainly holds for validators of fixed capacity, we believe that insufficient efforts have been made in the definition and implementation of a satisfying notion of decentralization for elastic validators.
-
 经典的“区块链不可能三角”<a href='#References10'>[10]</a>阐述了同时实现扩展性、安全性和去中心化的困难。这样的的观点在验证器能力恒定的前提下确实成立，然而，我们认为，对于如何定义和实施能够满足去中心化要求的弹性验证器这一方向，我们还没有做出足够的努力。
-
-- (**8**) Linera relies on delegated proof of stake (DPoS) for security and supports regularly changing sets of validators. Thanks to the chaining of blocks, the past transactions, the cross-chain messages, and the execution state of each microchain are tamper-resistant.
 
 - (**8**) Linera依赖委托权益证明(DPoS)保障安全性，并支持定期更换验证者集合。得益于区块的链接，任何微链的历史交易、跨链消息和执行状态都是防篡改的。
 
-- (**9**) Microchains are designed to be auditable independently. This means that Linera as a whole will be auditable in a distributed way by the community, using only commodity hardware.
-
 - (**9**) 微链可以被独立审计。这意味着作为整体的Linera可以由社区进行分布式审计，社区成员仅需要通用硬件便可参与。
 
-Using large validators for performance and maintaining decentralization using community driven auditors has been discussed by the blockchain community in the context of rollups <a href='#References10'>[10]</a>. As the Linera project makes progress, we will continue to monitor the technical advances in the field of validity (“ZK”) proofs and chain compression. Decentralization of Linera is further discussed in Section <a href='#Section5'>5</a>.
-
 文献<a href='#References10'>[10]</a>在Roolups场景下讨论了使用高性能验证器，同时由社区驱动的审计保持去中心化。随着Linera项目进展，我们将继续关注有效性（“ZK”）证明和链压缩领域的技术进步。我们将在第<a href='#Section5'>5</a>节进一步讨论Linera的去中心化。
-
-## 2 The Linera Multi-Chain Protocol
 
 ## 2 Linera多链协议
 
