@@ -130,7 +130,7 @@ Linera中的会话对象受到Move语言中资源的启发<a href='#References9'
 
 ### 2.1 参与者：用户、验证者、链所有者
 
-Linera协议的目标，在于提供一个计算基础设施。应用开发者可以在该基础设施上创建去dApps，终端用户可以安全高效地访问dApps。
+Linera协议的目标，在于提供一个计算基础设施。应用开发者可以在该基础设施上创建dApps，终端用户可以安全高效地访问dApps。
 
 和其他区块链系统一样，Linera应用程序的状态被复制到多个部分可信节点，这些节点称为验证者。应用程序通过将交易插入到新区块，并将新区块提交给验证者更新应用程序状态。
 
@@ -148,21 +148,17 @@ Linera协议的目标，在于提供一个计算基础设施。应用开发者�
 
 最后，我们将阐述Linera如何管理当前验证者集(也称为委员会)。第<a href='#Section4'>4</a>章中我们将讨论Linera的编程模型，此外，审计员角色将在第<a href='#Section5'>5</a>章讨论。
 
-===============================================
+### 2.2 Security model
 
-### 2.2 Security model  安全模型
+### 2.2 安全模型
 
-<a name='Section2.2'>Linera</a> is designed to be Byzantine-Fault Tolerant (BFT) <a href='#References13'>[13]</a>. All participants generate a key pair consisting of a private signature key and the corresponding public verification key. Linera uses a delegated proof of stake (DPoS) model <a href='#References28'>[28]</a>, where the voting power of each validator is bound to its stake and the stake delegated to it by users.
+<a name='Section2.2'>Linera</a>的共识遵循拜占庭容错机制(BFT)<a href='#References13'>[13]</a>，所有参与者创建自己的公私钥密钥对。Linera使用委托权益证明（DPoS）模型，每个验证者的投票权与其直接质押份额和用为委托给该验证者的质押份额相关。
 
-Linera被设计成具有拜占庭容错（BFT）特性。所有参与者生成包含私人签名密钥和相应的公共验证密钥的密钥对。Linera使用委托权益证明（DPoS）模型，其中每个验证者的投票权与其持股数量以及用户委托给它的持股数量相关联。
+**假设**。我们以总投票权为*N*的例子来说明Linera协议。一组未知的*Byzantine* (即*dishonest*)验证者子集可能偏离协议，与许多BFT协议[<a href='#References7'>7</a>, <a href='#References13'>13</a>]相似，假设该验证者子集最多控制*f*的投票权，其中*f*的取值范围为*0* ≤ *f* < $\frac{ N }{ 3 }$。实作上，人们通常选择最大值作为*f*，即*f* = $\lfloor \frac{ N - 1 }{ 3 } \rfloor$。
 
-**Assumptions.** We present the Linera protocol for a total voting power of *N*. A fixed, unknown subset of *Byzantine* (aka *dishonest*) validators may deviate from the protocol. It is assumed that they control at most *f* voting power for some value *f* such that 0 ≤ *f* < $\frac{ N }{ 3 }$. This is similar to many BFT protocols [<a href='#References7'>7</a>, <a href='#References13'>13</a>]. In practice, one chooses the largest possible value for *f*, namely *f* = $\lfloor \frac{ N - 1 }{ 3 } \rfloor$.
+安全层面，我们不对用户、链所有者或网络层实现做任何假设。除非特别说明，否则可用性(译者注：原文这里为liveness，意指服务能响应请求，但翻译为活性、活跃性都不合适，因此我们意译为可用性)不依赖于网络延迟或消息顺序，换句话说，网络是*异步的*<a href='#References13'>[13]</a>。
 
-假设。我们为N的总投票权力提出了Linera协议。一个固定的、未知的子集拜占庭（也称为不诚实的）验证者可能会偏离协议。假设他们最多控制f的投票权，其中f的取值范围为0 ≤ f < n/3。这类似于许多BFT协议。在实践中，人们通常选择最大可能的f值，即f = n/3。
-
-We do not make any assumptions about users, chain owners, or on the networking layer when it comes to safety properties. Unless specified otherwise, liveness properties do not depend on network delays or message ordering. In other words, the network is *asynchronous* <a href='#References13'>[13]</a>.
-
-在安全性属性方面，我们不对用户、链所有者或网络层做任何假设。除非另有说明，活跃性属性不依赖于网络延迟或消息顺序。换句话说，网络是异步的。
+==========================================================================================
 
 We use the word *quorum* to refer to a set of signatures issued by validators with a combined voting power of at least *N − f*. An important property of quorums, called quorum *intersection*, is that for any two quorums, there exists an honest validator *α* that is present in both. When data (typically a block) is signed by a quorum of validators, it is said to be *certified*. Certified data is also called a *certificate* for short.
 
