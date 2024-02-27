@@ -102,8 +102,6 @@ Linera的弹性验证者是其独特的假设。我们希望Linera社区支持�
 
 弹性验证器是Linera的独特假设。我们致力于支持更多可以作为验证器的云服务提供商，供Linera社区选择。Linera最初受到Meta开发的低延迟支付协议FastPay启发。在此基础上，Linera将用户账户转换为微链、添加智能合约并支持微链之间任意异步消息通信，大大丰富了FastPay协议。Linera多链协议的更多详细描述请参见第<a href='#Section2'>2</a>节。我们将在第<a href='#Section3'>3</a>节分析该协议。
 
-#### 1.5.2 Making multi-chain programming mainstream
-
 #### 1.5.2 使多链编程成为主流
 
 Linera使用同一个验证者集合管理全部微链。大规模的跨链通信通过单个验证者的内部网络实现，Web3应用从此能够利用廉价高效的基础设施弹性扩容。为了推动多链编程的采用，我们做出了以下设计选择：
@@ -115,8 +113,6 @@ Linera使用同一个验证者集合管理全部微链。大规模的跨链通�
 Linera中的会话对象受到Move语言中资源的启发<a href='#References9'>[9]</a>。Move语言中的静态类型资源被提议用于帮助实现组合性。在Linera中，会话处理和运行时检查实现了类似资源的组合性。例如，要发送代币，Linera合约能够转移包含该代币的临时会话的所有权。
 
 总的来说，构建大型的开发者社区是区块链基础设施被采用的一个重要因素。鉴于Wasm生态对于多语言工具的持续改进<a href='#References4'>[4]</a>，我们认为Wasm能够支撑Linera长期服务于不同的开发者社区。我们将在第<a href='#Section4'>4</a>节讨论更详细的Linera编程模型。
-
-#### 1.5.3 Robust decentralization for elastic validators
 
 #### 1.5.3 弹性验证者的可靠去中心化
 
