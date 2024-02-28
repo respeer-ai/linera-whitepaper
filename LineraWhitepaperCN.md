@@ -158,43 +158,23 @@ Linera协议的目标，在于提供一个计算基础设施。应用开发者�
 
 安全层面，我们不对用户、链所有者或网络层实现做任何假设。除非特别说明，否则可用性(译者注：原文这里为liveness，意指服务能响应请求，但翻译为活性、活跃性都不合适，因此我们意译为可用性)不依赖于网络延迟或消息顺序，换句话说，网络是*异步的*<a href='#References13'>[13]</a>。
 
-We use the word *quorum* to refer to a set of signatures issued by validators with a combined voting power of at least *N − f*. An important property of quorums, called quorum *intersection*, is that for any two quorums, there exists an honest validator *α* that is present in both. When data (typically a block) is signed by a quorum of validators, it is said to be *certified*. Certified data is also called a *certificate* for short.
-
 我们用术语*quorum*(译者注：quorum英文释义为法定人数，但是在区块链场景使用这样的释义略显莫名其妙，因此此处我们保留原单词)来表示由一组验证者签发的签名集合，参与签名的验证者至少拥有*N - f*的投票权。对于任意两个*quorum*，如果同一个诚实的验证者*α*同时存在于两个*quorum*中，称为quorum*交集*，这是*quorum*的重要特性。一个*quorum*中的验证者对数据(通常为一个区块)进行签名，称之为*认证*，被认证过的数据简称为*证书*。
-
-**Goals.** Linera aims to guarantee the following security properties:
 
 **目标**。Linera旨在确保下述安全特性：
 
-- *Safety:* For any microchain, every validator sees (a prefix of) the same chain of blocks, therefore it applies the same sequence of modifications to the execution state of the chain and eventually delivers the same set of messages to the other chains.
-
 - *安全性*：对于任意微链，不同的验证者看到的都是相同的区块(的前缀)按照同样顺路组成的链条，验证者按照同样的顺序修改微链的执行状态，并最终将同样的消息集合提交到其他微链。
-
-- *Eventual consistency of chains:* If a microchain is extended with a new certified block on an honest validator, any user can take a series of steps to ensure that this block is added to the chain on every honest validator.
 
 - *微链的最终一致性*：当一个诚实的验证者认证了一个新的区块，并将其添加到微链上，任何用户都可以通过一系列步骤确保该区块被所有诚实的验证者添加到他们的微链上。
 
-- *Eventual consistency of asynchronous messages:* If a microchain receives a cross-chain message on an honest validator, any user can take a series of steps to ensure that this message is received by the chain on every honest validator.
-
 - *异步消息的最终一致性*：如果某个诚实的验证者上的微链收到了跨链消息，任何用户都可以通过一系列步骤确保该消息被所有诚实的验证者收到。
- 
-- *Authenticity*： Only the owner(s) of a microchain can extend their microchain.
 
 - *可靠性*：只有微链的所有者(们)能向微链添加区块。
 
-- *Piecewise Auditability:* There is sufficient public cryptographic evidence for the state of Linera to be audited for correctness in a distributed way, one chain at a time.
-
 - *分段可审计性*：Linera的状态有足够的公开加密证据，可以以微链为单位，分布式审计其正确性。
-
-For single-owner chains (Section <a href='#Section2.4'>2.4</a>), Linera also guarantees the following properties:
 
 对于只有一个所有者的微链(第<a href='#Section2.4'>2.4</a>节)，Linera还确保以下特性：
 
-- *Monotonic block validation:* In a single-owner chain, if a block proposal is the first one to be signed by the owner at a given block height and it is accepted by an honest validator, then with appropriate actions, the chain owner always eventually succeeds in gathering enough votes to produce a certificate.
-
 - *单一区块验证*：在只有一个所有者的微链中，当所有者在给定高度签名并提交了该高度的第一个区块，只要有一个诚实的验证者接受该区块，那么通过适当的操作，所有者最终一定能够成功收集到足够的投票，为该区块生成一个证书。
-
-- *Worst-case Efficiency:* In a single-owner chain, Byzantine validators cannot significantly delay block proposals and block confirmations by correct users.
 
 - *最坏情况下的效率*：在只有一个所有者的微链中，拜占庭验证者不能给区块生成和正确用户的区块确认造成显著延迟。
 
