@@ -178,50 +178,61 @@ Linera协议的目标，在于提供一个计算基础设施。应用开发者�
 
 - *最坏情况下的效率*：在只有一个所有者的微链中，拜占庭验证者不能给区块生成和正确用户的区块确认造成显著延迟。
 
-========================================================================================================
+### 2.3 Notations
 
-### 2.3 Notations   符号
+### 2.3 符号
 
 We assume a collision-resistant hash function, noted **hash**(·), as well as a secure public-key signature scheme **sign**[.]. A quorum of signatures on a block *B* forms a certificate noted *C* = **cert**[*B*]. In the rest of this report, we identify certificates on the same block *B* and simply write *C* = **cert**[*B*] when *C* is any certificate on *B*.
 
-我们假设存在一个抗碰撞哈希函数，记为 hash(·)，以及一个安全的公钥签名方案 sign[.]。对于区块 B 上的一组签名，形成一个被标记为 C = cert[B] 的证书。在本报告的其余部分，我们将会识别同一区块 B 上的证书，并简单地写作 C = cert[B]，其中 C 是该区块上的任意证书。
+假设存在一个扛碰撞的哈希函数，记为**hash**(.)，以及一个安全的公钥签名方案**sign**(.)。一个*quorum*的所有验证者将对区块*B*签名，形成标记为*C* = **cert**[*B*]的证书。后续章节中，来自同一区块*B*的任意证书都将标记为*C* = **cert**[*B*]。
 
 The state of the Linera system is replicated across all validators. For a given validator, noted *α*, we use the notation *X*(*α*) to denote the current view of *α* regarding some replicated data *X*. A *data type D* = $\left \langle Tag, arg_1, . . . , arg_n \right \rangle$ is a sequence of values starting with a distinct marker **Tag** and meant to be sent over the network. We use capitalized names to distinguish data type markers from mathematical functions (e.g. **hash**) or data fields (e.g. **owner**$^{id}$(*α*)), and simply write **Tag**$(arg_1, . . . , arg_n)$ for a data type. We write $\widetilde{D}$ for a sequence of data types $(D_1, . . . D_n)$.
 
 Linera 系统的状态被复制到所有验证者中。对于给定的验证者，记为 α，我们使用符号 X(α) 来表示关于某个复制数据 X 的验证者 α 的当前视图。数据类型 D = $\left \langle Tag, arg_1, . . . , arg_n \right \rangle$ 是一系列以独特标记 Tag 开头的值，并打算发送到网络上。我们使用大写名称来区分数据类型标记和数学函数（例如 hash）或数据字段（例如 owner(α)），并简单地写作**Tag**$(arg_1, . . . , arg_n)$ 表示一个数据类型。我们将 写作 $\widetilde{D}$ 表示一系列数据类型 $(D_1, . . . D_n)$。
 
-### 2.4 Microchains   微块链
+Linera系统的执行状态将被所有验证者复制。对于给定的验证者*α*以及数据*X*，我们使用符号*X*(*α*)来表示*α*上的当前*X*视图。*data type D* = $\left \langle Tag, arg_1, . . . , arg_n \right \rangle$是一系列以**Tag**开头并等待传输到网络上的值。区别于数学函数(例如**hash**)或数据字段(例如**owner**$^{id}$(*α*))，数据类型标记使用大写名称标记，以**Tag**开头的数据类型简写为**Tag**$(arg_1, . . . , arg_n)$，一系列的数据类型$(D_1, . . . D_n)$写作$\widetilde{D}$。
+
+### 2.4 Microchains
+
+### 2.4 微链
 
 <a name='Section2.4'>The</a> main building blocks of the Linera infrastructure are its microchains. A microchain (or simply *chain* for short) is similar to a regular blockchain in the sense that it is made of a chain of blocks, each containing a sequence of transactions. Importantly, Linera separates the role of proposing new blocks (chain owners’ role) from validating them (validators’ role). The protocol to extend a chain is configurable and depends on the *type* of the chain.
 
-Linera 基础架构的主要构建模块是其微块链。微块链（简称为链）类似于常规区块链，由一系列包含交易序列的区块组成。重要的是，Linera 将提出新区块（链所有者的角色）与验证新区块（验证者的角色）的职责分开。扩展链的协议是可配置的，并取决于链的类型。
+<a name='Section2.4'>Linera</a>基础设施的主要构建单元称为微链。微链(或简称*链*)于常规区块链并无二致，都由一系列包含交易的区块组成。值得指出的是，Linera将创建新区块(链所有者角色)从验证区块(验证者角色)中剥离(译者注：现有的区块链系统中，矿工既创建区块，也验证其他矿工创建的区块，因此既是创建者，也是验证者)。向微链添加区块的协议是可配置的，并取决于链的类型（译者注：此处指微链可以是单所有者，也可以是多所有者，因此微链创建区块的角色实例可以是一个，也可以是多个，取决于创建微链的时候创建者的配置和微链的类型）。
 
 **Chain identifiers.** A microchain is represented by an identifier *id* designed to be nonreplayable. Specifically, a *unique identifier* (or simply *identifier* ) is a non-empty sequence of numbers written as *id* = [ $n_1$, . . . , $n_k$] for some 1 ≤ *k* ≤ $k_{max}$. We use :: to denote the concatenation of one number at the end of a sequence: [ $n_1$, . . . , $n_{k+1}$] = [ $n_1$, . . . , $n_k$] :: $n_{k+1}$ (*k* < $k_{MAX}$). In this example, we say that *id* = [ $n_1$, . . . , $n_k$] is the *parent* of id :: $n_{k+1}$.
 
-链标识符。微块链通过一个被设计为不可重放的标识符 id 来表示。具体来说，唯一标识符（或者简称标识符）是一串非空数字序列，写作id = [n1, . . . , nk]，其中 1 ≤ k ≤ n。我们使用 :: 表示将一个数字连接到序列的末尾：[n1, . . . , nk] = [n1, . . . , nk-1] :: nk（k < n）。在这个例子中，我们说 id = [n1, . . . , nk] 是 id :: nk 的父标识符。
+**微链标识**。每一条微链具有一个不可重放的*id*。具体来说，*唯一标识符*(或简称*标识符*，*id*)是一串非空数字，记为*id* = [ $n_1$, . . . , $n_k$](1 ≤ *k* ≤ $k_{max}$)。符号 :: 表示将一个数字连接到序列的尾部：[ $n_1$, . . . , $n_{k+1}$] = [ $n_1$, . . . , $n_k$] :: $n_{k+1}$ (*k* < $k_{MAX}$)，在这个例子中，我们将*id* = [ $n_1$, . . . , $n_k$]称为id :: $n_{k+1}$的*父标识符*。
 
 A Linera system starts with a fixed set of microchains defined in the genesis configuration. To create a new chain, the owner of an existing chain must execute a chain-creation transaction. The new identifier is computed as the concatenation of the parent identifier and the index of the transaction creating the new chain.
 
-Linera 系统从初始定义的基因配置中开始，其中包括了一组固定的微块链。要创建新的链，现有链的所有者必须执行一个创建链的交易。新标识符是通过将父标识符和创建新链的交易索引连接而得到的。
+Linera系统的创世配置，其中包含一组固定的微链，随系统启动开始运行。要创建新的微链，现有微链的所有者需要执行一条创建微链的交易(译者注：Linera启动包含一组公开微链，这一组公开微链与普通的公链并无二致，其区块由验证器产生，因此第一个新用户创建除了公开链的第一条微链时，该用户向公开链发送创建微链交易，验证器创建区块包含该交易并执行，第一条微链即创建成功)，新的微链标识符由父链(执行创建微链交易的链)标识符和创建新链的交易序号相连接得到。
 
 **Chain types.** Linera supports three types of microchains:
 
-链类型。Linera 支持三种类型的微块链：
+**微链类型**。Linera支持三种类型的微链：
 
 - (**i**) *Single-owner chains* where only one user (as identified by its public key) is authorized to propose blocks;
-- （i）单所有者链，只有一个用户（由其公钥标识）被授权提出区块；
+
+- (**i**) *单所有者链* 只有一个用户(由其公钥标识)可以创建区块；
+
 - (**ii**) *Permissioned chains* where only a well-defined set of cooperating users are authorized to propose blocks;
-- （ii）允许链，只有一个明确定义的合作用户集被授权提出区块；
+
+- (**ii**) *许可链* 只有明确定义的协作用户集合可以创建区块；
+
 - (**iii**) *Public chains* where validators propose blocks.
-- （iii）公共链，验证者提出区块。
+
+- (**iii**) *公开链* 验证者创建区块。
 
 In all three cases, the agreement between validators regarding the next block *B* of a chain is represented in fine by a certificate *C* = **cert**[*B*]. In the case of a single-owner chain, the production of the certificate *C* is inspired by reliable broadcast [7,12] and will be described in detail in Section <a href='#Section2.8'>2.8</a>. In the case of public chains, the certificate *C* is a proof of commit produced by a classical BFT consensus protocol between validators. The case of permissioned chains and public chains is sketched in Section <a href='#Section2.9'>2.9</a>. For simplicity, unless mentioned otherwise, the rest of this report focuses on single-owner chains.
 
-在这三种情况下，验证者对于链的下一个区块 B 的达成一致由证书 C = cert[B] 来表示。在单所有者链的情况下，证书 C 的生成受可靠广播的启发，并将在第 2.8 节中详细描述。在公共链的情况下，证书 C 是由验证者之间的经典 BFT 共识协议生成的提交证明。权限链和公共链的情况将在第 2.9 节中概述。为简单起见，除非另有说明，本报告的其余部分将重点放在单所有者链上。
+上述三种情况下，验证者对于微链的下一个区块*B*达成共识，都记为证书*C* = **cert**[*B*]。对于单所有者的微链，证书*C*的创建受可靠广播的启发[7,12]，该部分将在第<a href='#Section2.8'>2.8</a>节中详细阐述。对于公开链，证书*C*是验证者之间的经典BFT共识证明。许可链和公开链将在第<a href='#Section2.9'>2.9</a>节中作概要阐述。简单起见，若无特别说明，后文的重点将主要集中在单所有者链上。
 
 Every chain includes a field **owner**$^{id}$(*α*) to authenticate their *owner(s)*, if any. We write **owner**$^{id}$(*α*) = *pk* when the chain has a single owner authenticated by the public-key *pk*. Permissioned chains have **owner**$^{id}$(*α*) = { ${pk}_1$, . . . , ${pk}_n$} and public chains **owner**$^{id}$(*α*) = &#x2605;. When **owner**$^{id}$(*α*) = ⊥, the chain is said to be *inactive*.
 
-每个链都包括一个字段 owner(α) 用于验证其所有者，如果有的话。当链由公钥 pk 验证的单一所有者时，我们写作 owner(α) = pk。权限链的 owner(α) = {n1, . . . , nk}，公共链的 owner(α) = ★。当 owner(α) = ⊥ 时，表示该链处于非活跃状态。
+每条微链都包含**owner**$^{id}$(*α*)字段，如果该微链有所有者(译者注：公开链由验证者出块，可能没有所有者)，**owner**$^{id}$(*α*)字段字段将用于验证其*owner(s)*(所有者)。我们用**owner**$^{id}$(*α*) = *pk*记录单所有者的公钥为*pk*的微链，许可链记作**owner**$^{id}$(*α*) = { ${pk}_1$, . . . , ${pk}_n$}，公开链记作**owner**$^{id}$(*α*) = &#x2605;。如果**owner**$^{id}$(*α*) = ⊥，表示该微链处于*非活跃*(*inactive*)状态。
+
+==============================================================================================
 
 **Chain lifecycle.** Any existing chain can create a new microchain for another user and use the block certificate *C* as a proof of creation. Once created, the new microchain works independent from its parent microchain. Linera will make available a dedicated public chain to allow new users to easily create their first chain.
 
