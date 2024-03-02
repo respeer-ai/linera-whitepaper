@@ -328,35 +328,19 @@ Linera也可以通过执行交易更改**owner**$^{id}$(*α*)，将微链的控�
 
 单所有者链中，确定新区快的步骤&#x2460;&#x2461;&#x2462将消耗1.5个RTT(译者注：指通信的往返时间)。收到可靠广播启发，这个协议没有“试图变更”的概念<a href='#References12'>[12]</a>来支持重试，换句话说，只要有验证者开始针对区块*B*投票，链所有者不能终端当前区块*B*的提交，转而创建一个不同的区块。如果链所有者这么做，那么他的微链将被阻塞。有鉴于此，Linera也支持另一种可靠广播的变体，该变体将消耗额外的一个RTT(第<a href='#Section2.9'>2.9</a>节)。
 
-### 2.9 Extensions to the core protocol
-
 ### 2.9 核心协议的扩展
-
-<a name='Section2。9'>We</a> now sketch a number of important extensions to the core Linera multi-chain protocol.
 
 <a name='Section2.9'>本小节</a>我们介绍一些Linera核心多链协议的重要扩展。
 
-**Permissioned chains.** The protocol presented in Section <a href='#Section2.8'>2.8</a> allows extending a singleowner microchain optimistically in 1.5 client-validator round trips. Linera also supports a more complex protocol with 2.5 round trips to address the following use cases:
-
 **许可链**。<a href='#Section2.8'>2.8</a>节介绍了在单所有者链上添加区块的乐观协议，该协议消耗1.5个客户端到验证者的RTT。为了适应下述应用场景，Linera使用一种更加复杂的协议，该协议消耗2.5个RTT：
-
-- A single chain owner wants to be able to safely interrupt ongoing block proposals while they are in progress.
 
 - 单所有链的所有者希望能够安全地终端进行中的区块提议；
 
-- Transactions in blocks depend on external oracles (*e.g.* Unix time) and include conditions that may become invalid after being valid.
-
 - 区块中的交易依赖于外部预言机(例如Unix时间)，并且某些条件在区块被验证之后变得无效；
-
-- Multiple owners wish to operate the chain (assuming minimal off-chain coordination).
 
 - 多个所有者希望共同运营微链(假设这些所有者之间具有一定的链下协作水平)；
 
-- A single chain owner wishes to delegate maintenance operations related to validator reconfigurations.
-
 - 单所有者链的所有者希望委托验证者重新配置有关的维护操作。
-
-We omit the details of the 2.5 round-trip protocol for brevity. It can be seen as a simplified partially-synchronous BFT consensus protocol <a href='#References12'>[12]</a> with view changes (aka rounds) but without leader election or timeouts. In the absence of leader election, different owners may try to propose a different block at the same time (*i.e.* in the same block height and round) causing the current round to fail and another round to be needed. As a consequence, this mode of operation assumes that the owner(s) of a same chain maintain a sufficient level of (off-chain) cooperation so that ultimately only one of them proposes a block and succeeds.
 
 简洁起见，我们省略了2.5个RTT的区块验证协议的细节。该协议可以认为是一个简化的部分同步BFT共识协议<a href='#References12'>[12]</a>，其中包含视图变更(亦称为轮次)，但不包含领导者选举或超时机制。当没有领导者选举时，同一时刻(例如在同一个区块高度和轮次)不同的所有者将会尝试提交不同的区块，进而导致当前轮次失败，需要在新的轮次中重新达成共识。因此，这种操作假定同一链的不同所有者保持足够水平的(链下)合作，从而保证最终只有一个用户提出区块并成功提交。
 
