@@ -284,67 +284,45 @@ Linera也可以通过执行交易更改**owner**$^{id}$(*α*)，将微链的控�
 
 前三种交易类型是在协议中预先定义的*系统操作*，相反，用户操作*o*是由用户定义的应用程序(也称为“智能合约”)执行。概而言之，区块创建者应该可以自由添加操作，而消息应由另一微链的另一交易发起，然后才能被接收(2.5)。
 
-简单起见，我们省略了多所有者链和重新配置所需的交易奋勇和额外逻辑(第<a href='#Section2.9'>2.9</a>节)。正式地说，为了执行用户操作o，我们假设有一个记为$ExecuteOperation(id, o)$的方法，该方法试图修改${state}^{id}$，如果修改成功，该方法可能返回⊥或$(m, id')$，二者只有在需要向微链$id'$发送一条消息*m*的时候才返回。我们还假设一个方法$ExecuteMessage(id, m)$，该方法通过执行一条跨链消息*m*修改${state}^{id}$。特别需要指出的是，接收一条m消息可能会产生另一条消息$m'$作为回应。
+简单起见，我们省略了多所有者链和重新配置所需的交易奋勇和额外逻辑(第<a href='#Section2.9'>2.9</a>节)。正式地说，为了执行用户操作o，我们假设有一个记为 $ExecuteOperation(id, o)$ 的方法，该方法试图修改 ${state}^{id}$，如果修改成功，该方法可能返回⊥或 $(m, id')$，二者只有在需要向微链$id'$发送一条消息*m*的时候才返回。我们还假设一个方法 $ExecuteMessage(id, m)$，该方法通过执行一条跨链消息*m*修改 ${state}^{id}$。特别需要指出的是，接收一条m消息可能会产生另一条消息 $m'$ 作为回应。
 
-上述内容对应Algorithm 1中伪代码，其中执行区块$B = Block(id, n, h, \widetilde{T})$对应函数ExecuteBlock。验证区块的函数BlockIsValid执行过程与ExecuteBlock相似，除了执行结果不持久化(因而不会影响链状态)、忽略跨链查询、以及消息不能预先执行，也就是说，如果调用结束时${inbox}^{id}_-$非空，验证将失败。
+上述内容对应Algorithm 1中伪代码，其中执行区块 $B = Block(id, n, h, \widetilde{T})$ 对应函数ExecuteBlock。验证区块的函数BlockIsValid执行过程与ExecuteBlock相似，除了执行结果不持久化(因而不会影响链状态)、忽略跨链查询、以及消息不能预先执行，也就是说，如果调用结束时 ${inbox}^{id}_-$ 非空，验证将失败。
 
-=============================================================================
+### 2.8 客户端/验证者交互
 
-### 2.8 Client/validator interactions    客户端/验证者交互
+<a name='Section2.8'>本小节</a>我们阐述在Linera系统中客户端(又称为链所有者)与验证者之间的交互。遵循Linera协议的客户端运行一个本地节点，记为β，追踪与其相关的微链子集，该子集通常包含客户端拥有的链以及这些链的依赖。除此之外，该节点也追踪一条特殊的Admin公开链。Admin公开链负责维护验证者集合，以及验证者的网络地址(第<a href='#Section2.9'>2.9</a>节)。
 
-<a name='Section2.8'>We</a> can now describe the interactions between clients (aka chain owners) and validators in a Linera system. Clients to the Linera protocol run a local node, noted β, that tracks a small subset of chains relevant to them. These relevant chains typically include the ones owned by the client as well as direct dependencies, notably a special Admin chain in charge of tracking validators and their networking addresses (Section <a href='#Section2.9'>2.9</a>).
+和验证者的网络交互总是从客户端发起，这些交互的目的主要为(i)向自己维护的微链添加一个新区块，或(ii)将自己维护的微链的证书提供给*滞后*的验证者。
 
-我们现在可以描述在 Linera 系统中客户端（又称链所有者）与验证者之间的交互。遵循 Linera 协议的客户端运行一个本地节点，记为 β，用来跟踪与其相关的一小部分链。这些相关的链通常包括客户端拥有的链以及直接依赖项，特别是负责跟踪验证者和它们的网络地址的特殊 Admin 链（2.9 节）。
+验证者实现了两个服务处理例程(称为 HandleRequest 和 HandleCertificate)支持上述两种场景，Algorithm 2中描述了该过程。简单起见，我们省略了客户端从验证者查询连状态或同步区块链的处理例程。
 
-Network interactions with validators are always initiated by a client. Clients may wish to either (i) extend one of their own chain(s) with a new block, or (ii) provide a *lagging* validator with the certificates that it is missing in a chain of interest to the client.
+首先我们讨论更新滞后验证者的交互。
 
-客户端始终会主动发起与验证者的网络交互。客户端可能希望要么（i）通过一个新区块扩展自己的链，要么（ii）向滞后的验证者提供其在客户端感兴趣的链中缺失的证书。
+**向验证者上传缺失证书**。对于处于活跃状态的微链*id*，以及验证者*α*认为符合下一个预期高度的区块$B = Block(id, n, h, \widetilde{T})$(正式写法记作${owner}^{id}(α) \not= ⊥$ and **next-height**$^{id}(α) = n$)，任何客户端都可以使用HandleCertificate将新证书$C = cert[B]$上传到验证者提交给验证者*α*。
 
-To support these two use cases, validators provide two service handlers described in Algorithm 2 and called HandleRequest and HandleCertificate. For simplicity, we omit the service handlers used by clients to query the state of a chain or to download a chain of blocks from a validator.
+如果验证者*α*尚未创建链*id*，或者滞后超过一个区块高度，客户端应该顺序上传多个缺失的证书，并以$C = cert[B]$结尾。若有必要，该证书序列可以从*祖先*微链$id'$（即$id' = parent(parent(. . . id))）的区块开始。此时，上述区块序列应该包含验证者验证者所能管理的最后一个父链之后的所有父链区块，并直到*C*所在微链的区块结束。
 
-为了支持这两种用例，验证者提供了两个服务处理程序，在算法2中进行了描述，分别被称为 HandleRequest 和 HandleCertificate。为简单起见，我们省略了客户端用于查询链状态或从验证者下载区块链的服务处理程序。
+实际上，要求客户端上传这样一个区块序列，也表明本地节点*β*是第一个能够追踪微链*id*的角色。客户端可以通过查看列表${received}^{id}(β)$中记录的第一个区块来快速找到创建*id*的确切区块。
 
-We start with the interactions meant to update a lagging validator.
+**扩展单所有者链**。如图1所示，当执行状态同步正常的验证者足够时，Linera客户端可以通过一种可靠广播的变体[<a href='#References7'>7</a>, <a href='#References12'>12</a>]，向他们的微链添加一个新的区块*B*。该过程步骤如下：
 
-我们首先讨论更新滞后验证者的交互。
+- 客户端将其签名验证的区块*B*通过HandleRequest广播给每个验证者，并等待一定数量的回复；
 
-**Uploading missing certificates to a validator.** Any client may upload a new certificate $C = cert[B]$ with $B = Block(id, n, h, \widetilde{T})$ to a validator *α* using the HandleCertificate entry point, provided that the chain *id* is active and that *n* is the next expected block height from the point of view of *α (*i.e.* formally ${owner}^{id}(α) \not= ⊥$ and **next-height**$^{id}(α) = n$).
+- 对于*有效*请求$R = auth[B]$，验证者在预期高度向客户端发送签名*B*，称为*投票*，作为回应(&#x2462;)。客户端收到一定数量的投票后，生成一个证书$C = cert[B]$；
 
-任何客户端都可以使用 HandleCertificate 入口点将一个新的证书 c 上传到验证者 α，前提是链 id 处于活跃状态，并且从验证者 α 的角度看，n 是下一个预期的区块高度（即形式上为 n = next-height(α)）。
+- 客户端向验证者上传(&#x2463;)下一个区块高度的证书$C = cert[B]$，此时亦将触发区块*B*的一次执行(&#x2464;)。
 
-If the validator *α* has not created the chain *id* yet or if it is lagging by more than one block, concretely the client should upload a sequence of multiple missing certificates ending with $C = cert[B]$. If necessary, the sequence may start with blocks of an *ancestor* chain $id'$ (that is, $id' = parent(parent(. . . id)))$. In this case, the sequence continues until the block of the parent chain that created the chain id is reached, then finishes with the chain of blocks ending with *C*.
-
-如果验证者 α 尚未创建链 id，或者滞后超过一个区块，具体来说，客户端应该上传一系列多个缺失的证书，以 结尾。如有必要，这个序列可以以祖先链的区块开始（即 ）。在这种情况下，序列会持续直到达到创建了链 id 的父链的区块，然后以包含证书 C 结尾的区块链结束。
-
-In practice, the need to upload such a sequence of certificates justifies that the local node *β* may track the chain *id* in the first place. The client can quickly find the exact block that created *id* by looking at the first block logged in the list ${received}^{id}(β)$.
-
-实际上，需要上传这样一个证书序列的情况证明了本地节点 β 首先需要跟踪链 id。客户端可以通过查看列表 中记录的第一个区块来快速找到创建 id 的确切区块。
-
-**Extending a single-owner chain.** In the common scenario where validators are sufficiently up-to-date, Linera clients may extend their chain with a new block *B* using a variant of reliable broadcast [<a href='#References7'>7</a>, <a href='#References12'>12</a>] illustrated in Figure 1 and going as follows.
-
-扩展单所有者链。在验证者足够及时的常见情况下，Linera 客户端可以使用可靠广播的一种变体来添加一个新区块 B，这在图1中进行了说明，步骤如下。
-
-- The client broadcasts the block *B* authenticated by its signature to each validator using the HandleRequest entry point $α(&#x2460;)$ and waits for a quorum of responses.
-- 客户端使用其签名对区块 B 进行广播，并通过 HandleRequest 入口点 ① 将其发送给每个验证者，并等待获得一定数量的回应。
-- A validator responds to a *valid* request $R = auth[B]$ of the expected height by sending back a signature on *B*, called a *vote*, as acknowledgment (&#x2462;). After receiving votes from a quorum of validators, a client forms a certificate $C = cert[B]$.
-- 验证者对预期高度的有效请求 ② 做出响应，回复一个对 B 的签名，称为投票，作为确认（③）。
-- When a certificate $C = cert[B]$ with the expected next block height is uploaded (&#x2463;), this triggers the one-time execution of the block *B* (&#x2464;).
-- 在获得来自一定数量的验证者的投票后，客户端形成证书 ④。当上传带有预期下一个区块高度的证书 ④ 时，这将触发对区块 B 的一次性执行 ⑤。
-
-A synchronization step is occasionally needed first (&#x24EA;) if some validator *α* is unable to vote right away for an otherwise-valid proposal $B = Block(id, n, h, \widetilde{T})$. This may happen for two reasons:
-
-有时候首先需要进行同步步骤（⓪），如果某个验证者 α 无法立即对一个否则有效的提案 进行投票。这可能出现两种情况：
+当某个验证者*α*不能立即确认一个有效(译者注：otherwise-valid应该怎么翻译？)区块提议$B = Block(id, n, h, \widetilde{T})$时，首先需要执行同步(&#x24EA;)。以下两种原因可能导致这种情况发生：
 
 ![image](https://github.com/kikakkz/linera-whitepaper/assets/13128505/46ef58c9-a9f0-40b7-ac8e-bfe704e36699)
+ 
+- 1. 微链*id*处于停用状态，或验证者*α*缺少较早的区块(即${owner}^{id}(α) = ⊥$ or **next-height**$^{id}(α) < n$)；
+ 
+- 2. 验证者*α*缺失跨链消息，即当$\widetilde{T}$阶段性执行结束时，$I_− = {inbox}^{id}$不为空。
 
-- 1. either the chain *id* is not active yet or *α* is missing earlier blocks (*i.e.* formally ${owner}^{id}(α) = ⊥$ or **next-height**$^{id}(α) < n$);
-  2. 要么链 id 尚未激活，要么 α 缺少较早的区块（即形式上为 next-block(α) < next-height(α)）。
-- 2. *α* is missing cross-chain messages, that is: $I_− = {inbox}^{id}$ is not empty at the end of the staged execution of $\widetilde{T}$.
-  3. α 缺少跨链消息，即在 对 staged 执行结束时不为空。
+第一种情况下，如前所述，Linera客户端必须上传微链*id*(可能包含其祖先链)的全部缺失证书，直到**next-height**$^{id}$(α) = n。第二种情况下，客户端必须将其他微链向微链*id*发送过的已经执行的消息$m ∈ I_−$上传。当区块*B*被正确构造(即没有尝试接收未发送的消息)，证书集合$\cup_α' {received}^{id}(α')$($α'$为任意数量的验证者)应该能够覆盖集合$I_−$中的消息(译者注：此处的翻译需要重新审定)。
 
-In the first case, the Linera client must upload missing certificates in the chain *id* (and possibly its ancestors) as described in the previous paragraph, until **next-height**$^{id}$(α) = n. In the second case, the client must upload missing certificates in the chains that have sent the messages $m ∈ I_−$ to *id*. When *B* has been correctly constructed (*i.e.* is not trying to receive messages that were never sent), the set $I_−$ is necessarily covered by the certificates listed in the union $\cup_α' {received}^{id}(α')$ where $α'$ ranges over any quorum of validators.
-
-在第一种情况下，Linera 客户端必须根据前面的段落所述，在链 id（及可能其祖先）中上传缺失的证书，直到 next-height(α) = n。在第二种情况下，客户端必须上传发送消息 到 id 的链中缺失的证书。当 B 被正确构建时（即没有尝试接收从未发送的消息），集合 是由列在任何验证者的任意仲裁联盟的证书的并集 并且范围涵盖。
+===================================================================================
 
 Importantly, uploading a missing block to a validator benefits all clients. To maximize liveness and decrease the latency of their future transactions, in practice, it is expected that users proactively update all the validators when it comes to their own chains, therefore minimizing the need for synchronization by other clients. However, the possibility of synchronization by everyone is important for liveness (Section <a href='#Section3.3'>3.3</a>). It also allows a certificate to act as a proof of finality for the certified block.
 
