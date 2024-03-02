@@ -322,19 +322,11 @@ Linera也可以通过执行交易更改**owner**$^{id}$(*α*)，将微链的控�
 
 第一种情况下，如前所述，Linera客户端必须上传微链*id*(可能包含其祖先链)的全部缺失证书，直到**next-height**$^{id}$(α) = n。第二种情况下，客户端必须将其他微链向微链*id*发送过的已经执行的消息$m ∈ I_−$上传。当区块*B*被正确构造(即没有尝试接收未发送的消息)，证书集合$\cup_α' {received}^{id}(α')$($α'$为任意数量的验证者)应该能够覆盖集合$I_−$中的消息(译者注：此处的翻译需要重新审定)。
 
-===================================================================================
+需要特别指出的是，所有客户端都能从向验证者上传缺失区块这一行为中受益。为了最大限度提升可用性与降低交易延迟，实现上，当涉及到自己拥有的微链时，用户们常倾向于主动更新所有验证者，以减少从其他客户端同步的需要。然而，每个人都可能进行同步对于可用性来说至关重要(第<a href='#Section3.3'>3.3</a>节)，这也使得证书能够作为验证区块的最终证明。
 
-Importantly, uploading a missing block to a validator benefits all clients. To maximize liveness and decrease the latency of their future transactions, in practice, it is expected that users proactively update all the validators when it comes to their own chains, therefore minimizing the need for synchronization by other clients. However, the possibility of synchronization by everyone is important for liveness (Section <a href='#Section3.3'>3.3</a>). It also allows a certificate to act as a proof of finality for the certified block.
+实现上，客户端应该在单独的线程上执行每个验证者的同步步骤(&#x24EA;)(可选)和投票步骤(&#x2460;)。一旦收到足够的投票(&#x2461;)，客户端可以停止与验证者之间的同步，以防止恶意验证者发起的拒绝服务攻击。
 
-重要的是，向验证者上传缺失的区块对所有客户端都有好处。为了最大限度地提高活跃性并减少未来交易的延迟，在实践中，预计用户会在涉及自己链的情况下主动更新所有验证者，从而最大程度地减少其他客户端进行同步的需求。然而，每个人都有可能进行同步对于活跃性（3.3 节）非常重要。它也使证书能够作为被认证区块的最终性的证明。
-
-In practice, a client should execute the optional synchronization step (&#x24EA;) and the voting step (&#x2460;) on a separate thread for each validator. To prevent denial-of-service attacks from malicious validators, a client may stop synchronizing validators as soon as enough votes are collected (&#x2461;).
-
-在实践中，客户端应该为每个验证者在单独的线程上执行可选的同步步骤（⓪）和投票步骤（①）。为了防止恶意验证者发起拒绝服务攻击，一旦收集到足够的投票（②），客户端可以停止与验证者进行同步。
-
-The steps &#x2460;&#x2461;&#x2462; used to decide a new block in a single-owner chain constitute a 1.5 round-trip protocol. Inspired by reliable broadcast, this protocol does not have a notion of “view change” <a href='#References12'>[12]</a> to support retries. In other words, a chain owner that has started submitting a (valid) block proposal *B* cannot interrupt the process to propose a different block once some validators have voted for *B*. Doing so would risk blocking their chain. For this reason, Linera also supports a variant with an extra round trip (Section <a href='#Section2.9'>2.9</a>).
-
-决定单所有者链中的新区块的步骤 ①②③ 构成了一个1.5往返协议。受可靠广播启发，这个协议没有“视图更改” [12] 的概念来支持重试。换句话说，一旦某些验证者对 B 进行了投票，已经开始提交（有效的）区块提案 B 的链所有者就不能中断流程以提出不同的区块。这样做会有阻塞他们的链的风险。因此，Linera也支持一种额外往返的变体（2.9 节）。
+单所有者链中，确定新区快的步骤&#x2460;&#x2461;&#x2462将消耗1.5个RTT(译者注：指通信的往返时间)。收到可靠广播启发，这个协议没有“试图变更”的概念<a href='#References12'>[12]</a>来支持重试，换句话说，只要有验证者开始针对区块*B*投票，链所有者不能终端当前区块*B*的提交，转而创建一个不同的区块。如果链所有者这么做，那么他的微链将被阻塞。有鉴于此，Linera也支持另一种可靠广播的变体，该变体将消耗额外的一个RTT(第<a href='#Section2.9'>2.9</a>节)。
 
 ### 2.9 Extensions to the core protocol    核心协议的扩展
 
