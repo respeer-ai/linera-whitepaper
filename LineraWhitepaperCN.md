@@ -192,7 +192,7 @@ Linera系统的执行状态将被所有验证者复制。对于给定的验证�
 
 **微链标识**。每一条微链具有一个不可重放的*id*。具体来说，*唯一标识符*(或简称*标识符*，*id*)是一串非空数字，记为*id* = [ $n_1$, . . . , $n_k$](1 ≤ *k* ≤ $k_{max}$)。符号 :: 表示将一个数字连接到序列的尾部：[ $n_1$, . . . , $n_{k+1}$] = [ $n_1$, . . . , $n_k$] :: $n_{k+1}$ (*k* < $k_{MAX}$)，在这个例子中，我们将*id* = [ $n_1$, . . . , $n_k$]称为id :: $n_{k+1}$的*父标识符*。
 
-Linera系统的创世配置，其中包含一组固定的微链，随系统启动开始运行。要创建新的微链，现有微链的所有者需要执行一条创建微链的交易(译者注：Linera启动包含一组公开微链，这一组公开微链与普通的公链并无二致，其区块由验证器产生，因此第一个新用户创建除了公开链的第一条微链时，该用户向公开链发送创建微链交易，验证器创建区块包含该交易并执行，第一条微链即创建成功)，新的微链标识符由父链(执行创建微链交易的链)标识符和创建新链的交易序号相连接得到。
+Linera系统的创世配置，其中包含一组固定的微链，随系统启动开始运行。要创建新的微链，现有微链的所有者需要执行一条创建微链的交易(译者注：Linera启动包含一组公开微链，这一组公开微链与普通的公链并无二致，其区块由验证器产生，因此第一个新用户创建除了公开链的第一条微链时，该用户向公开链发送创建微链交易，验证器创建区块包含该交易并执行，第一条微链即创建成功。与官方就“第一个用户该如何创建第一条微链”话题进行讨论，其结论与其他质押公链的冷启动没有不同，创世配置中将包含某些预先分配了币的地址，例如交易所地址、初始验证器质押地址等，当用户向交易所购买币，交易所将币转账到用户地址，即创建了新的临时微链)，新的微链标识符由父链(执行创建微链交易的链)标识符和创建新链的交易序号相连接得到。
 
 **微链类型**。Linera支持三种类型的微链：
 
@@ -206,136 +206,173 @@ Linera系统的创世配置，其中包含一组固定的微链，随系统启�
 
 每条微链都包含**owner**$^{id}$(*α*)字段，如果该微链有所有者(译者注：公开链由验证者出块，可能没有所有者)，**owner**$^{id}$(*α*)字段字段将用于验证其*owner(s)*(所有者)。我们用**owner**$^{id}$(*α*) = *pk*记录单所有者的公钥为*pk*的微链，许可链记作**owner**$^{id}$(*α*) = { ${pk}_1$, . . . , ${pk}_n$}，公开链记作**owner**$^{id}$(*α*) = &#x2605;。如果**owner**$^{id}$(*α*) = ⊥，表示该微链处于*非活跃*(*inactive*)状态。
 
-==============================================================================================
-
 **Chain lifecycle.** Any existing chain can create a new microchain for another user and use the block certificate *C* as a proof of creation. Once created, the new microchain works independent from its parent microchain. Linera will make available a dedicated public chain to allow new users to easily create their first chain.
 
-链的生命周期。任何现有的链都可以为另一个用户创建一个新的微块链，并使用区块证书 C 作为创建的证明。一旦创建，新的微块链将独立于其父级微块链运行。Linera 将提供一个专门的公共链，以便新用户可以轻松地创建他们的第一个链。
+**微链生命周期**。已经存在的链可以为新用户创建微链，并使用区块证书*C*作为创建证明(译者注：即该创建微链的交易被打包到证书*C*描述的区块*B*中)。新微链被创建后，与父链的运行是相互独立的。Linera设计了一条专用的公开链，以方便新用户创建他们自己的第一个微链。
 
 Linera also makes it possible to safely and verifiably transfer the control of a chain to another user by executing a transaction that changes the key **owner**$^{id}$(*α*). Setting **owner**$^{id}$(*α*) = ⊥ effectively deactivates the chain permanently.
 
-Linera 还可以通过执行更改 owner(α) 的交易，将链的控制安全可靠地转移给另一个用户。将 owner(α) = ⊥ 设置为有效地永久停用该链。
+Linera也可以通过执行交易更改**owner**$^{id}$(*α*)，将微链的控制权(译者注：主要为微链出块权)安全可靠地转移给另一个用户。当设置**owner**$^{id}$(*α*) = ⊥生效，微链将永久停用。
 
 Using unique identifiers is important so that the state of a deactivated microchain can be safely deleted and archived in cold storage while preventing the chain of blocks from being replayed.
 
-使用唯一标识符是很重要的，这样在停用微块链的情况下，可以安全地删除并存档在冷库中，同时防止区块链被重放。
+微链的唯一标识符具有重要意义。当微链被停用时，微链的状态可以安全地删除并存档在冷存储，唯一标识符使得这些存档的区块数据不能用于重放攻击(TODO：确认用ID防止重放攻击的场景)。
 
 **Blocks.** A *block* is a data type *B* = **Block**(*id*, *n*, *h*, $\widetilde{T}$) made of the following data:
 
-区块。一个区块是由以下数据组成的数据类型 B = Block(id, n, h, T):
+**区块**。一个*区块*可以用数据类型*B* = **Block**(*id*, *n*, *h*, $\widetilde{T}$)描述，其中：
+
 - the unique identifier of the chain to extend *id*,
-- 要扩展的链的唯一标识符 id,
+
+- *id*表示该区块所属微链的唯一标识符，
+ 
 - a block height *n* ≥ 0,
-- 区块高度 n ≥ 0,
+
+- *n* ≥ 0表示微链区块高度，
+
 - the hash *h* of the previous block (or ⊥ if *n* = 0),
-- 上一个区块的哈希 h（如果 n = 0，则为 ⊥）,
+
+- *h*表示上一个区块的哈希值(如果*n* = 0, *h* = ⊥)，
+
 - a sequence of *transactions* $\widetilde{T}$.
-- 一系列交易 T.
+
+- $\widetilde{T}$表示一系列*交易*。
 
 A transaction *T* is an instruction meant to be executed on a chain. Transactions are typically used to modify the *execution state* of the chain. In Linera, they may also have additional effects such as creating chains, sending messages to a *recipient* chain ${id}'$, or receiving messages.
 
-交易 T 是指在链上执行的指令。交易通常用于修改链的执行状态。在 Linera 中，它们也可能具有额外的效果，比如创建链、向接收链发送消息，或者接收消息。
+交易*T*指一条将在链上执行的指令，区块链的执行状态变更通常由交易完成。在Linera中，交易除了字面意义，通常还包含创建微链、发送消息到目标微链，或接受消息等。
 
 A microchain *id* with a current chain of blocks ⊥ → $B_0$ → . . . → $B_n$ is successfully extended by block *B* when validators receive a certified request *C* = **cert**[*B*] that contains id and the next expected block height *n* + 1. Validators track the current state of each chain *id* and only vote in favor of adding a block *B* after validating the correct chaining and the correct execution of *B*. Under BFT assumption, this ensures that validators eventually execute the same sequence of blocks on each chain, therefore agree on the execution state.
 
-当验证者收到一个包含 id 和下一个预期区块高度 n + 1 的认证请求 C = cert[B] 时，微块链 id 的当前区块链 ⊥ → → . . . → 成功地被区块 B 扩展。验证者跟踪每个链 id 的当前状态，并只在验证正确的链接和正确执行 B 后投票赞成添加一个区块 B。根据 BFT 假设，这确保了验证者最终在每个链上执行相同的区块序列，因此对执行状态达成一致。
+当验证者收到一个包含*id*和下一个预期区块高度*n* + 1的证书*C* = **cert**[*B*]时，区块*B*即被添加到标识符为*id*，包含区块⊥ → $B_0$ → . . . → $B_n$的微链上。验证者集合追踪每条微链的当前状态，当区块*B*的区块链接正确性、执行正确性被验证通过，验证者集合将投票向微链添加区块*B*。在BFT前提下，我们能够确保验证者在每条微链上将最终执行相同的区块去练，然后达成一致的执行状态。
 
 The execution of a block *B* consists in interpreting the transactions $\widetilde{T}$ listed in *B* in the given order. Transactions may produce outgoing messages for other chains and consume incoming messages. In practice, for auditing purposes, blocks *B* also include the hash of the state after executing the block, as well as the outgoing messages produced by transactions.
 
 区块 B 的执行包括按照给定顺序解释 B 中列出的交易。交易可能会为其他链产生输出消息并消费输入消息。在实践中，出于审计目的，区块 B 还包括执行该区块后的状态哈希值，以及交易产生的输出消息。
 
-### 2.5 Cross-chain requests   跨链请求
+### 2.5 Cross-chain requests
+
+### 2.5 跨链请求
 
 <a name='Section2.5'>The</a> state of a Linera application is usually distributed across many chains for scalability. To coordinate across chains, applications rely on asynchronous communication (see also Section <a href='#Section4.3'>4.3</a> on programmability).
 
-Linera 应用程序的状态通常为了可扩展性分布在许多链上。为了跨链协调，应用程序依赖于异步通信（也请参阅第 4.3 节的可编程性）。
+<a name='Section2.5'>为了</a>扩展性，Linera应用程序的状态通常分布在许多微链上，并依赖异步通信进行跨链协同(亦见第<a href='#Section4.3'>4.3</a>节的可编程性)。
 
 At the protocol level, asynchronous communication between chains relies on an important mechanism called *cross-chain requests*. Concretely, the execution of a transaction in a block on a chain *id* by a validator *α* may sometimes trigger a one-time, asynchronous interaction that will modify the state of another chain $id'$. (See Algorithm 1 for an example of pseudo-code with cross-chain requests.) Cross-chain requests are cheaply implemented using remote procedure calls (RPCs) in the internal network of each validator: the implementation needs only ensure that each request is executed exactly once.
 
-在协议级别，链与链之间的异步通信依赖于一个重要的机制，称为跨链请求。具体来说，验证者 α 在链 id 上对区块中的交易进行执行时，有时可能会触发一次性的异步交互，这将修改另一个链的状态。（有关使用跨链请求的伪代码示例，请参见算法 1。）跨链请求通过在每个验证者的内部网络中使用远程过程调用（RPC）来便宜实现：实现只需要确保每个请求被执行一次。
+在协议级别，微链之间的异步通信依赖于称为*跨链请求*的重要机制完成。具体来说，当验证者*α*执行微链*id*上的一条交易，该交易需要修改另一条微链$id'$的状态，将会触发一次异步交互。(跨链请求的伪代码参见Algorithm 1。) 跨链请求简单实现为验证者内网的远程过程调用(RPCs)：这样的实现只需要确保每次请求只执行一次。(译者注：英文文档使用cheaply implemented，描述复用RPC实现的低成本和便捷性)。
 
 Importantly, arbitrarily modifying the execution state of a target chain with a crosschain request is not possible in general because validators do not agree on the order of execution of cross-chain requests—in other words, this would break the *Safety* property. While FastPay <a href='#References7'>[7]</a> uses cross-chain requests for payments only, Linera uses this mechanism to create new chains and to deliver messages to the *inbox* of an existing chain.
 
-重要的是，一般情况下不能通过跨链请求任意修改目标链的执行状态，因为验证者不会就跨链请求的执行顺序达成一致——换句话说，这将破坏安全性属性。虽然 FastPay [7] 只用于支付的跨链请求，但 Linera 使用这种机制来创建新链并向现有链的收件箱投递消息。
+重要的时，鉴于验证者之间对于跨链请求的执行顺序不可能达成一致(译者注：由于跨链请求为验证者之间的RPC调用，不同验证者并不能确保RPC请求的顺序完全一样)，我们不能通过任意跨链请求修改目标链的执行状态，这样会破坏安全性。FastPay<a href='#References7'>[7]</a>中的跨链请求只用于实现支付，在Linera中，这样的机制(译者注：指跨链请求)也用于创建新微链，和向运行中的微链的*收件箱*传输消息。
 
 Inboxes allow Linera to support arbitrary messages because the modification is not applied to the target chain immediately. Rather, the message is placed in the target chain’s inbox, implemented as a commutative data structure (*i.e.* where the order of insertions does not matter) described in Section <a href='#Section2.6'>2.6</a>. The owner(s) of the receiving chain then executes a transaction that picks the message from the inbox and applies its effect to the chain state (Section <a href='#Section2.7'>2.7</a>).
 
 收件箱允许 Linera 支持任意消息，因为修改不会立即应用到目标链上。相反，该消息被放置在目标链的收件箱中，这里实现为一个可交换的数据结构（即插入顺序无关），详见第 2.6 节。接收链的所有者随后执行一个从收件箱中提取消息并将其效果应用到链状态的交易（第 2.7 节）。
 
+由于收件箱的消息不会立即在目标微链执行，收件箱允许Linera支持任意消息。可以这么说，目标微链的收件箱中，消息实现为一个可交换的数据结构(即插入顺序无关)，该数据结构将在第<a href='#Section2.6'>2.6</a>进一步阐述。目标微链的所有者(们)从收件箱中取出消息，执行交易以修改微链状态(<a href='#Section2.7'>2.7</a>节)。
+
 ### 2.6 Chain states  链状态
+
+### 2.6 微链状态
 
 <a name='Section2.6'>We</a> now describe the state of the Linera chains as seen by validators and clients. Every validator stores a map that contains the states of all the chains, indexed by their identifiers. Clients have a similar representation of the chains except that they act as a *full-node* (*i.e.* track the chain of blocks and execution state) only for a small subset of the chains relevant to them. Next, we focus on the state of a given validator, noted *α*.
 
-我们现在描述 Linera 链的状态，这是验证者和客户端所看到的。每个验证者都存储一个包含所有链状态的映射表，通过它们的标识进行索引。客户端也有类似的链表示，只不过它们只对与自身相关的一小部分链 acting as a full-node（即跟踪链的区块和执行状态） 。接下来，我们将重点放在给定验证者α的状态上。
+<a name='Section2.6'>本小节</a>我们将从验证者和客户端的角度阐述Linera微链的状态。每个验证者都会存储一个由微链的标识符索引的微链状态映射表，该表中包含全部微链。客户端与验证者唯一不同的是，客户端只存储与自己相关的微链子集，每个客户端都相当于其微链子集的*全节点*(即追踪微链区块与执行状态)。接下来，我们将重点阐述给定验证者*α*的状态。
 
 **Chain state.** The state of a chain *id* as seen by a validator *α* can be divided into (i) a *consistent part* which is a deterministic function of the chain of blocks ⊥ → $B_0$ → . . . → $B_n$ already executed by *α*; and (ii) a *localized* part on which validators may not agree. The consistent part of a chain state includes the following data:
 
-链状态。验证者 α 所看到的链 id 的状态可以分为两部分：(i) 一个一致的部分，它是验证者α已经执行的链的区块 ⊥ → → . . . → 的确定性函数；(ii) 另一部分是本地化的部分，验证者可能在这部分上达不成一致。链状态的一致部分包括以下数据：
+**链状态**。验证者*α*看到的微链*id*可以分为两部分：(i) *一致部分*，该部分为验证者*α*已经执行过的微链区块⊥ → $B_0$ → . . . → $B_n$；(ii) *本地部分*，验证者集合在该部分上可能不能达成共识。一致部分的链状态包含以下数据：
 
 - A field **owner**$^{id}$(*α*) controlling the production of blocks in *id*, as seen before.
-- 一个字段 owner(α) 控制着 id 链中区块的生成，如前所述。
+
+- **owner**$^{id}$(*α*)，前述控制微链*id*的区块创建的链所有者，
+
 - An integer value, written **next-height**$^{id}$(*α*), tracking the expected block height for the next block of *id*. (Here $n + 1$. Initially 0.)
-- 一个整数值，记为 next-height(α)，用来追踪 id 链下一个区块的预期高度。（初始为0）
-- The hash of the previous block **block-hash**$^{id}$(α) (initially ⊥.)
-- 上一个区块的哈希值 block-hash(α)（初始为 ⊥）。
+
+- **next-height**$^{id}$(*α*)，记录微链*id*下一区块高度的整数值($n + 1$，初值为0)，
+
+- **block-hash**$^{id}$(α)，The hash of the previous block(initially ⊥.)
+
+- **block-hash**$^{id}$(α)，上一个区块的哈希值**block-hash**$^{id}$(α)（初值为⊥），
+
 - The execution state, noted **state**$^{id}$(*α*).
-- 执行状态，记为 state(α)。
+
+- **state**$^{id}$(*α*)，执行状态**state**$^{id}$(*α*)。
 
 The localized part of a chain state includes the following:
 
-链状态的本地化部分包括以下内容：
+本地化部分的链状态包括以下内容：
 
 - **pending**$^{id}$(*α*), an optional value indicating that a block on *id* is pending confirmation (the initial value being ⊥).
-- pending(α)，一个可选值，指示 id 上的一个区块正在等待确认（初始值为 ⊥）。
+
+- **pending**$^{id}$(*α*)，可选值，表示微链*id*上正在等待确认的区块(初值为⊥)，
+
 - A list of certificates, written **received**$^{id}$(*α*), tracking all the certificates that have been confirmed by *α* and involving *id* as a recipient chain.
-- 一份证书列表，记为 received(α)，跟踪所有已被验证者 α 确认的并且涉及 id 作为接收链的证书。
+
+- **received**$^{id}$(*α*)，证书列表，追踪目标微链*id*的所有已经被验证者*α*确认的证书，
+
 - A data-structure called an *inbox* and denoted by **inbox**$^{id}$(*α*) (see next paragraph).
-- 一个名为收件箱的数据结构，记为 inbox(α)（见下一段）。
+
+- **inbox**$^{id}$(*α*)，*收件箱*数据结构(见下一段)。
 
 The field **pending**$^{id}$(*α*) is specific to single-owner chains and explained in Section <a href='#Section2.8'>2.8</a>. It is completed by additional data in the case of permissioned and public chains. The list of certificates **received**$^{id}$(*α*) is crucial for liveness (Section <a href='#Section3.3'>3.3</a>).
 
-字段 pending(α) 是针对单所有者链的，并在第2.8节中进行了解释。在权限链和公共链的情况下，会补充额外的数据。而 received(α) 证书列表对于活跃性（第3.3节）至关重要。
+**pending**$^{id}$(*α*)字段只对单所有者链生效，我们将在第<a href='#Section2.8'>2.8</a>节中阐述，许可链和公开链的情况将会由额外的数据进行补充，而**received**$^{id}$(*α*)证书列表对于可用性(第<a href='#Section3.3'>3.3</a>)至关重要。
 
 **Inbox state.** An inbox $I = {inbox}^{id}(α)$ is a special data structure used to track the crosschain messages received by *id* and waiting to be consumed by a transaction. Specifically, messages are *added* to an inbox upon reception and *removed* from it after being executed by the receiving chain.
 
-收件箱状态。收件箱是一种特殊的数据结构，用于跟踪 id 接收到的跨链消息，并等待被交易消耗。具体来说，消息在接收后被添加到收件箱中，在被接收链执行后从中移除。
-
+**收件箱状态**。收件箱$I = {inbox}^{id}(α)$是一种特殊数据结构，用于追踪微链*id*接收的跨链消息，并等待消息被交易消费。特别地，接收消息时将消息*添加*到收件箱中，目标链执行消息后从收件箱中移除。
 
 An important property of an inbox is that adding or consuming distinct messages is commutative. In the simplest implementation, one can think of an inbox as two disjoint sets of messages $I = (I_+, I_−)$. We may define the addition of a message *m* to *I*, noted $I + m$, as $(I_+ ∪$ {m}, $I_−)$ if $m \notin I_−$ and $(I_+, I_−$\\{m}) otherwise. Similarly, the subtraction $I − m$ is $(I_+, I_− ∪$ {m}) if $m \notin I_+$ and $(I_+$\\{m}, $I_−)$ otherwise. In this setting, when ${inbox}^{id}(α) = (I_+, I_−)$, the set $I_+$ represents the messages m that have been received by *id* and are waiting to be executed in a next block; $I_−$ tracks the messages that have not been received by *id* yet (from the point of view of *α*) but were nonetheless executed by anticipation because of a certified block. In this simplified presentation, we are assuming that messages are never replayed identically, say, because they include a counter for each pair of sender and receiver $(id, id')$.
 
-收件箱的一个重要性质是，添加或消耗不同消息是可交换的。在最简单的实现中，可以将收件箱看作两个不相交的消息集合。我们可以定义将消息 m 添加到 I（记为 ）的操作为 {m}，如果 m 不在 I 中，则为 {m}；类似地，将消息 m 从 I 中移除（记为 ）的操作为 {m}，如果 m 在 I 中，则为 {m}。在这种情况下，当为时，集合 表示已被 id 接收并等待在下一个区块中执行的消息 m；表示尚未被 id 接收（从验证者 α 的角度来看），但由于认证区块的预期执行而提前执行的消息。在这个简化的描述中，我们假设消息永远不会完全重放，比如因为它们包含了每对发送方和接收方的计数器。
+收件箱的一个重要特性时添加或消费不同的消息顺序是可交换的。在最简单的实现中，我们可以将收件箱看作两个不相交的消息集合$I = (I_+, I_−)$。我们可以将添加消息*m*到*I*中的操作定义为$I + m$，如果$m \notin I_−$，则$(I_+, I_−$\\{m})，否则$(I_+ ∪$ {m}。(译者注：此处数学公式表示*I*集合中的两个子集中只要由一个子集添加过消息*m*，则不在将消息*m*添加到*I*集合)。同样，将从*I*中移除消息*m*的操作定义为$I − m$，如果$m \notin I_+$，则$(I_+$\\{m}, $I_−)$，否则$(I_+, I_− ∪$ {m})。在这种情况下，对于${inbox}^{id}(α) = (I_+, I_−)$，集合$I_+$表示微链*id*已经接受并将在下一个区块中执行的消息m；$I_−$表示那些尽管尚未被微链*id*接收(验证者*α*的视角)，但预期将被已经认证的区块执行的消息。在这个简化的描述中，由于消息包含发送方和接收方$(id, id')$的计数器，我们假设消息永远不会被无差别重放。
 
 The current implementation of Linera uses a more complex data structure enforcing an ordered delivery of messages for each pair of sender and receiver, and for each application. See Appendix A.1 for a detailed description. For simplicity, in what follows, we still use the notation ${inbox}^{id}_−$ to denote the equivalent of the set $I_−$ above, representing the executed messages waiting to be received by the chain *id* at a given moment.
 
-Linera 当前的实现使用了一种更复杂的数据结构，对于每对发送方和接收方以及每个应用程序都强制执行消息的有序传递。详细描述请参见附录 A.1。为简单起见，在接下来的内容中，我们仍然使用符号 来表示上述集合的等价物，表示已执行的消息，正在等待在某一特定时刻被链 id 接收。
+为强制对于所有发送方与接收方，以及所有应用程序有序传递消息，Linera实现了一种更加复杂的数据结构，附录A.1对此做了详细的阐述。简单起见，后文中我们仍然使用符号${inbox}^{id}_−$来代替前述集合$I_−$，表示那些特定时刻已经被执行却尚未被微链*id*收到的的消息。
 
-### 2.7 Block execution    区块执行
+### 2.7 Block execution
+
+### 2.7 区块执行
 
 <a name='Section2.7'>We</a> now describe how to execute the sequence of transactions contained in a chain of blocks. The transactions *T* supported by a Linera deployment include the following commands:
-我们现在描述如何执行包含在区块链中的交易序列。Linera 部署支持的交易 T 包括以下命令：
+
+<a name='Section2.7'>本小节</a>我们将阐述如何执行区块交易。Linera支持如下的交易类型：
 
 - $OpenChain(id', pk')$ to activate a new chain with a fresh identifier $id'$ and public key $pk'$—possibly on behalf of another user who owns $pk'$;
-- $OpenChain(id', pk')$ 激活一个带有新标识符$id'$和公钥的新链  $pk'$ —— 可能代表另一个拥有者 $pk'$；
+
+- $OpenChain(id', pk')$，用户$pk'$创建新的微链$id'$；
+
 - $ChangeKey(pk')$ to transfer the ownership of a chain;
-- $ChangeKey(pk')$转移链的所有权；
+
+- $ChangeKey(pk')$，转移微链的所有权；
+
 - $CloseChain$ to deactivate the chain *id*;
-- $CloseChain$停用链 *id*；
+
+- $CloseChain$，停止微链*id*；
+
 - $Execute(o)$ to execute a *user operation o*;
-- $Execute(o)$执行*user operation o*；
+
+- $Execute(o)$，执行*用户操作o*；
+
 - $Receive(m)$ to pick a *cross-chain message m* from the chain inbox and execute it.
-- $Receive(m)$从链收件箱中提取一条跨链消息 m 并执行它。
+
+- $Receive(m)$，从收件箱中取出一条*跨链消息m*并执行。
 
 The first three types of transactions are examples of *system operations* that are predefined in the protocol. In constrast, user operations *o* are executed by user-defined applications (aka “smart contracts”). At a high level, operations are meant to be freely added by the producer of a block, whereas receiving a cross-chain message requires the message to be first sent by another transaction of another chain (2.5).
 
-前三种类型的交易是预先在协议中定义的系统操作的示例。相反，用户操作 o 是由用户定义的应用程序（也称为“智能合约”）执行的。在高层次上，操作应该可以自由地被区块的生成者添加，而接收跨链消息则要求该消息首先通过另一个链的另一个交易发送出去（2.5 节）。
+前三种交易类型是在协议中预先定义的*系统操作*，相反，用户操作*o*是由用户定义的应用程序(也称为“智能合约”)执行。概而言之，区块创建者应该可以自由添加操作，而消息应由另一微链的另一交易发起，然后才能被接收(2.5)。
 
 For simplicity, we have omitted transaction fees and additional logic required by multiowner chains and reconfigurations (Section <a href='#Section2.9'>2.9</a>). Formally, to execute user operations o, we assume a method $ExecuteOperation(id, o)$ that attempts to modify ${state}^{id}$ and may return either ⊥ or $(m, id')$ in case of success, the latter case being a request that a message *m* be sent to the chain $id'$. We also assume a method to modify ${state}^{id}$ by executing a crosschain message *m*, noted $ExecuteMessage(id, m)$. Importantly, receiving a message m may produce another message $m'$ in return.
 
-为简单起见，我们省略了多所有者链和重新配置所需的交易费用和额外逻辑（2.9 节）。正式地说，为了执行用户操作 o，我们假设有一个方法 ，它试图修改 并可能返回 ⊥ 或 在成功的情况下，后者是请求将一条消息 m 发送到链 的情况。我们还假设有一个方法通过执行跨链消息 m 来修改 ，记为 。重要的是，接收消息 m 可能会产生另一条消息 作为回应。
+简单起见，我们省略了多所有者链和重新配置所需的交易奋勇和额外逻辑(第<a href='#Section2.9'>2.9</a>节)。正式地说，为了执行用户操作o，我们假设有一个记为$ExecuteOperation(id, o)$的方法，该方法试图修改${state}^{id}$，如果修改成功，该方法可能返回⊥或$(m, id')$，二者只有在需要向微链$id'$发送一条消息*m*的时候才返回。我们还假设一个方法$ExecuteMessage(id, m)，该方法通过执行一条跨链消息*m*修改${state}^{id}$。特别需要指出的是，接收一条m消息可能会产生另一条消息$m'$作为回应。
 
 This description translates to the pseudo-code in Algorithm 1. The execution of a block $B = Block(id, n, h, \widetilde{T})$ as suggested above corresponds to the function ExecuteBlock. The validation of blocks by the function BlockIsValid is similar to ExecuteBlock except that no change to the state is persisted, cross-chain queries are ignored, and messages cannot be executed by anticipation, that is, the validation fails if ${inbox}^{id}_-$ is not empty at the end of the call.
 
-这个描述对应于算法1中的伪代码。如上所建议的区块 的执行对应于函数 ExecuteBlock。通过函数 BlockIsValid 对区块进行验证类似于 ExecuteBlock，只是不会将状态持久化，跨链查询会被忽略，并且消息不能通过预期执行，也就是说，如果 在调用结束时不为空，验证将失败。
+上述内容对应Algorithm 1中伪代码，其中执行区块$B = Block(id, n, h, \widetilde{T})$对应函数ExecuteBlock。验证区块的函数BlockIsValid执行过程与ExecuteBlock相似，除了执行结果不持久化(因而不会影响链状态)、忽略跨链查询、以及消息不能预先执行，也就是说，如果调用结束时${inbox}^{id}_-$非空，验证将失败。
+
+=============================================================================
 
 ### 2.8 Client/validator interactions    客户端/验证者交互
 
