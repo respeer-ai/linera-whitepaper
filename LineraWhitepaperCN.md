@@ -442,61 +442,41 @@ Linera客户端并发联系所有验证者，一旦客户端收到一定数量�
 
 假定微链*id*区块提议*B*是某高度的第一个签名区块，当一个验证者接受该区块时，意味着其他验证者*α*要么已经接受该区块(即${pending}^{id}(α) = B$)，要么还未进行投票(即${pending}^{id}(α) = ⊥$)。针对后一种情况，验证者*α*对于区块*B*的验证可能因为早期区块或消息缺失而失败：这种情况可以通过向该验证者上传缺失区块解决(参见第<a href='#Section2.8'>2.8</a>节)。同步完成后，在没有外部预言机和非确定性行为的情况下，验证者*α*将最终给提交的区块*B*产生期望的投票。
 
-=================================================
+## 4 在Linera上构建 Web3 应用
 
-## 4 Building Web3 Applications in Linera    在 Linera 中构建 Web3 应用程序
+<a name='Section4'>Linera</a>的编程模型<a href='#References30'>[1]</a>旨在为应用程序开发者提供丰富的、语言无关的组合性，使得应用开发者可以利用微链的扩展性。
 
-<a name='Section4'>The</a> programming model of Linera <a href='#References30'>[1]</a> is designed to provide rich, language-agnostic composability to application developers while taking advantage of microchains for scaling.
+### 4.1 创建应用
 
-Linera[1]的编程模型旨在为应用程序开发人员提供丰富的、与语言无关的可组合性，并利用微链进行扩展。
+Linera采用WebAssembly(Wasm)[<a href='#References3'>3</a>, <a href='#References23'>23</a>]作为应用执行引擎，早期的SDK将基于Rust语言提供。
 
-### 4.1 Creating applications    创建应用程序
+应用程序的创建分为几个步骤(图3)。首先，将Rust编写的软件模块(又称智能合约)编译成Wasm字节码，应用的作者将字节码部署到某一微链，产生唯一的*字节码标识符*；其次，使用字节码标识符和特定的应用程序参数(例如代币名称，代币供应量等)初始化字节码，这一步骤将创建一个新的应用程序标识符(图3中的“APP 1”)，并初始化应用程序的本地状态(“APP INSTANCE $1_B$”)，应用程序的本地状态可能包含特定参数，将来用于管理新的应用程序。
 
-Linera uses the WebAssembly (Wasm) virtual machine [<a href='#References3'>3</a>, <a href='#References23'>23</a>] as the execution engine for user applications. The SDK to develop Linera applications will be initially targeting the Rust language.
-
-Linera 使用 WebAssembly（Wasm）虚拟机[3, 23]作为用户应用程序的执行引擎。最初，开发 Linera 应用程序的 SDK 将针对 Rust 语言。
-
-An application is created in several steps (Figure 3). First, a software module (aka smart contract) in Rust is compiled to Wasm bytecode. The bytecode is then published by its author on a microchain of its choice and receives a unique *bytecode identifier*. Next, the bytecode is instantiated using the bytecode identifier and specific application parameters (*e.g.* name of the token, token supply, etc). This operation creates a fresh application identifier (“APP 1” in Figure 3) and initializes the local state of the application (“APP INSTANCE $1_B$”). This initial local state may hold specific parameters to help administrating the new application in the future.
-
-应用程序的创建分为几个步骤（见图3）。首先，使用 Rust 编写的软件模块（也称为智能合约）被编译成 Wasm 字节码。然后，该字节码由其作者发布到所选的微链上，并获得一个唯一的字节码标识符。接下来，使用字节码标识符和特定的应用程序参数（例如代币的名称、代币供应量等）实例化字节码。这个操作创建了一个新的应用程序标识符（图3中的“APP 1”），并初始化了应用程序的本地状态（“APP INSTANCE”）。这个初始本地状态可能包含特定的参数，以帮助将来管理新应用程序。
-
-A single bytecode identifier can spawn across multiple, independent applications that share the same code but do not share the same configuration (“APP 1” and “APP 2” in Figure 3).
-
-一个字节码标识符可以衍生出多个独立的应用程序，它们共享相同的代码但不共享相同的配置（图3中的“APP 1”和“APP 2”）。
+同一个字节码标识符可以创建多个独立的应用程序，这些应用程序共享相同的代码，单拥有独立的配置(图3中的“APP 1”和“APP 2”)。
 
 ![image](https://github.com/kikakkz/linera-whitepaper/assets/13128505/4b5b2b92-3439-4a08-9eef-685e81534547)
 
-### 4.2 Multi-chain deployment    多链部署
+### 4.2 多链部署
 
-Linera applications are multi-chain by default in the sense that their global state is generally split across several chains. In other words, the local instance of an application at a given chain holds only the subset of the application state that is located there. For instance, in an ERC-20-like token management application, the owner of a single-owner chain may want to hold their personal accounts on the chain that they own.
+Linera应用程序默认是多链的，其状态通常分布在几条微链上。换句话说，应用程序在给定微链上的实例指管理该应用程序在给定微链上的状态子集。例如，在类似ERC-20的代币管理应用中，单所有者链的所有者可能希望在他们子集的微链上持有他们的个人账户。
 
-Linera 应用程序在默认情况下是多链的，这意味着它们的全局状态通常分布在几个链上。换句话说，应用程序在给定链上的本地实例只持有该链上所在位置的应用程序状态的子集。例如，在类似 ERC-20 代币管理的应用程序中，单所有者链的所有者可能希望在他们拥有的链上持有他们的个人账户。
+当微链的所有者首次接收来自应用(译者注：指该微链此前并没有运行过发送该消息的应用)的消息时(参见第<a href='#Section2.5'>2.5</a>节)，应用程序的字节码将被自动下载，并开始运行(图3中的“APP INSTANCE”)。
 
-The bytecode of an application is automatically downloaded and the application started when the owner of a microchain accepts an incoming message (Section <a href='#Section2.5'>2.5</a>) from the application for the first time (“APP INSTANCE $1_C$” in Figure 3).
+### 4.3 跨链通信
 
-当微链的所有者首次接受来自应用程序的传入消息时（参见第2.5节），应用程序的字节码会被自动下载，并开始运行（图3中的“APP INSTANCE”）。
+<a name='Section4.3'>应用</a>之间的跨链通信通过异步调用实现，因此不同的微链可以独立运行。Linera应用程序之间的跨链协作编程风格收到actor设计模式的启发，其实现依赖于第<a href='#Section2.5'>2.5</a>节介绍的跨链请求，核心在于每个actor都独占访问其内部状态，且actor之间不能互相调用。
 
-### 4.3 Cross-chain communication   跨链通信
+**跨链消息**。跨链消息允许应用程序将任意数据从一条微链异步传输到另一条微链(图4)，跨链消息的发送端和接收端必须是相同的应用程序(译者注：是应用程序，而不是应用程序实例)，这样才能解析发送的数据。实践上，应用程序为每个消息源维护一个收件箱，当应用程序希望向目标发送信息，应用程序只需返回包含消息内容的值，之后运行时将会执行适当的跨链请求。
 
-<a name='Section4.3'>Cross-chain</a> communication between applications is realized using asynchronous calls to allow microchains to run independently. The programming style for cross-chain coordination between Linera applications is inspired by the actor model [6]. The implementation relies on cross-chain requests described in Section <a href='#Section2.5'>2.5</a>. The fundamental point is that each actor has exclusive access to its own internal state and that actors cannot call each other directly.
+与FastPay <a href='#References7'>[7]</a> 和 Zef <a href='#References8'>[8]</a> 不同，除了支付请求，Linera可以传送任意用户应用定义的跨链消息。跨链消息的执行结果通常不可交换，因此在Linera中，接收方接收和执行微链的顺序至关重要。通过区块创建者指定的提取消息顺序，我们可以解决此问题。
 
-应用程序之间的跨链通信是通过异步调用实现的，以允许微链独立运行。Linera 应用程序之间的跨链协调编程风格受到了 actor 模型[6]的启发。该实现依赖于第2.5节中描述的跨链请求。其基本观点是每个 actor 都有对其自己内部状态的独占访问权，并且 actor 不能直接相互调用。
+总而言之，接收端并不保证取出消息，但当消息被取出时，当前的实践将强制按顺序提取消息。为适应特定的使用场景，这一通用策略可能会在将来进一步完善，特别时对于区块生产从不停止的公开链而言(第<a href='#Section2.9'>2.9</a>节)。
 
-**Cross-chain messages.** Cross-chain messages allow an application to transfer arbitrary data asynchronously from one chain to another (Figure 4). To make sense of the data, the same application must be on the sending end and on the receiving end of a cross-chain message. In practice, the local instance of an application maintains an inbox per origin that the instance has communicated with. When an application wants to send a message to a destination, it returns a value containing the message so that the runtime can execute the appropriate cross-chain request.
+**发布/订阅频道**。除了一对一通信，Linera还支持使用*频道*进行一对多通信。用户可以在应用内创建一个频道，运行在其他微链上的同一应用程序的实例可以通过发送包含微链标识的订阅消息订阅该频道。特别需要指出的是，只有当频道发布者将订阅请求消息添加到自己的微链，以完成接受该订阅后，订阅者才会被添加到频道。底层实现上，频道以一组一对一连接的方式存在，发布到频道的消息将被被提交到所有订阅者的收件箱，并可以被订阅者接收。设计上，新加入的订阅者将只会接收到频道的最后一条消息，而非全部历史消息。
 
-跨链消息。跨链消息允许应用程序将任意数据异步从一条链传输到另一条链（图4）。为了理解这些数据，发送端和接收端必须是同一个应用程序。在实践中，应用程序的本地实例会维护与其通信的每个来源的收件箱。当应用程序希望向目标发送消息时，它返回一个包含消息的值，以便运行时可以执行适当的跨链请求。
 
-Contrary to FastPay <a href='#References7'>[7]</a> and Zef <a href='#References8'>[8]</a>, Linera is not limited to payment requests and can deliver arbitrary cross-chain messages defined by user applications. The effects of cross-chain messages do not generally commute, therefore in Linera, the ordering in which incoming messages are received and then executed by a recipient’s chain is important. We solve this issue by relying on block proposers to specify the ordering of incoming messages when picking the messages from the chain inboxes.
 
-与 FastPay [7] 和 Zef [8] 不同，Linera 不仅限于支付请求，还可以传递用户应用程序定义的任意跨链消息。跨链消息的影响通常不可交换，因此在 Linera 中，接收方链接收并执行传入消息的顺序很重要。我们通过依赖区块提议者来指定从链收件箱中提取消息的顺序来解决这个问题。
-
-In general, messages are not guaranteed to be picked on the receiving side. When they are, the current implementation forces messages to be picked in order. This general policy will likely be refined in the future to account for specific use cases, notably for public chains where block production never stops (Section <a href='#Section2.9'>2.9</a>).
-
-总的来说，在接收端，并不能保证消息一定会被提取。当它们被提取时，当前的实现强制消息按顺序提取。这种一般性策略可能会在未来得到进一步完善，以考虑特定的用例，特别是对于区块生产从不停止的公共链（第2.9节）。
-
-**Pub/sub channels.** On top of the one-to-one communication, Linera supports one-tomany communication using *channels*. A user can create a channel within an application, while the same application’s instances residing on other microchains can subscribe to it by sending a subscribe message with the publisher application and chain identifiers. Importantly, a subscriber is added to a channel only when the publisher accepts the subscription by adding the registration message to its chain. Under the hood, channels act as a set of one-to-one connections. A message sent to a channel is delivered to all the inboxes that are subscribed to the channel and can be picked up by the subscribers. By design, a late subscriber, once accepted by the publisher, receives the last message sent to the channel—rather than the entire history of messages.
-
-发布/订阅频道。除了一对一通信外，Linera 还支持使用频道进行一对多通信。用户可以在应用程序内创建频道，而驻留在其他微链上的同一应用程序实例可以通过发送带有发布者应用程序和链标识符的订阅消息来订阅它。需要注意的是，只有当发布者通过在其链上添加注册消息来接受订阅时，订阅者才会被添加到频道。在底层，频道充当一组一对一连接。发送到频道的消息会传递到所有订阅该频道的收件箱，并且能够被订阅者接收。设计上，一旦被发布者接受，晚订阅者会接收到发送到频道的最后一条消息，而不是整个消息历史。
+==================================================================
 
 ### 4.4 Local composability  本地可组合性
 
