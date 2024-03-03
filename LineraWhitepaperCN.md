@@ -492,22 +492,15 @@ Linera应用程序默认是多链的，其状态通常分布在几条微链上�
 
 同样，当调用同一微链上的另一个应用时，authenticated signers也可能被传递，这样应用可以创建新资产，并通过抽象API接口，使得其他应用可以使用该资产。
 
+### 4.6 临时链
 
-====================================================================
+Linera编程模型的另一个特点在于能够创建短生命周期的许可链(第<a href='#Section2.9'>2.9</a>节)，这些短期微链可以用于一些协作松散的用户之间的短期交互。
 
-### 4.6 Ephemeral chains    瞬时链
+例如，两个用户可以为了原子交换两种资产创建一条微链，该微链将(最多)有两个所有者，其参数将依据交换过程调整。当使用该微链时，两个用户必须将需要交换的资产从各自的主微链转移到共享链上，并由其中一个用户创建一个区块来确认或取消交换。特别需要指出的是，当交完完成，共享微链就会被停用，这样可以防止共享临时微链被添加更多区块，以便于将来归档。
 
-Another specificity of the programming model of Linera is the ability to create short-lived permissioned chains (Section <a href='#Section2.9'>2.9</a>) meant for a short interaction between a small number of loosely coordinated users.
+为了优化临时许可链的可用性(第<a href='#Section2.9'>2.9</a>节)，如共识协议所述，操作过程将会与用户权限交互创建区块。例如，上述原子交换的临时链中，只有已经锁定资产的链所有者能提议区块。另一个例子是用于两个用户下国际象棋的临时微链，这一微链中，应用可以决定哪位玩家需要移动，然后更新微链共识，只接受来自所选用户的下一个区块。一个更加贴近现实的国际象棋应用可能还需要包含裁判作为临时链的所有者，这样裁判可以强制执行游戏进展。
 
-Linera编程模型的另一个特点是能够创建短暂的权限链（第2.9节），用于少数松散协调用户之间的短期交互。
-
-For instance, two users may create a microchain for swapping two assets atomically. The shared microchain will have (up to) two owners and its parameters will be adapted to the exchange process. To use the chain, both users must transfer the assets that they want to exchange from their primary microchains to the shared chain, then one of the users must create a block to confirm or cancel the swap. Importantly, once the swap is concluded, the shared microchain is deactivated. This prevents any further extension of the temporary chain and allows archiving it in the future.
-
-例如，两个用户可以为了原子地交换两种资产而创建一个微链。共享的微链将有（最多）两个所有者，并且其参数将适应交换过程。要使用该链，两个用户必须将他们想要交换的资产从各自的主微链转移到共享链上，然后其中一个用户必须创建一个区块来确认或取消交换。重要的是，一旦交换完成，共享的微链就会被停用。这样可以防止临时链的进一步延伸，并允许在将来对其进行归档。
-
-To optimize liveness in the case of an ephemeral permissioned chain (Section <a href='#Section2.9'>2.9</a>), operations may interact with the user permissions to propose blocks as seen by the consensus protocol. For instance, in the case of a temporary chain for an atomic swap, it is desirable to restrict the ability to propose blocks to those owners who have already locked their assets. Another example is a temporary microchain dedicated to a game of chess between two users. Here, the application can determine which player needs to move and update the microchain consensus layer to accept the next block only from the chosen user. A more realistic chess application may also include a referee as an owner of the temporary chain to enforce progress.
-
-为了优化瞬时的权限链（第2.9节）的活跃性，在操作中可以与用户权限交互以提出区块，如共识协议所见。例如，在用于原子交换的临时链的情况下，希望将提出区块的能力限制在那些已经锁定其资产的所有者身上。另一个例子是专门用于两个用户之间下国际象棋的临时微链。在这里，应用程序可以确定哪位玩家需要移动，并更新微链共识层，只接受来自所选用户的下一个区块。更实际的国际象棋应用程序可能还包括裁判作为临时链的所有者，以强制执行游戏的进展。
+===========================================================================================
 
 ## 5 Decentralization   去中心化
 
