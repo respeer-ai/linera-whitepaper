@@ -344,62 +344,37 @@ Linera也可以通过执行交易更改**owner**$^{id}$(*α*)，将微链的控�
 
 简洁起见，我们省略了2.5个RTT的区块验证协议的细节。该协议可以认为是一个简化的部分同步BFT共识协议<a href='#References12'>[12]</a>，其中包含视图变更(亦称为轮次)，但不包含领导者选举或超时机制。当没有领导者选举时，同一时刻(例如在同一个区块高度和轮次)不同的所有者将会尝试提交不同的区块，进而导致当前轮次失败，需要在新的轮次中重新达成共识。因此，这种操作假定同一链的不同所有者保持足够水平的(链下)合作，从而保证最终只有一个用户提出区块并成功提交。
 
-===========================================================================
+**公开链**。当微链的区块由验证者创建时，我们将其称之为公开链。此时，区块中的交易可能只包含其他微链发送的跨链消息。公开链的应用场景包含：
 
-**Public chains.** Public chains are used in the remaining use cases: when a chain continuously produces new blocks with the help of validators. In this case, the transactions authorized in a block are likely to be only those receiving cross-chain messages from other chains. Examples of applications include:
+- 在同一个地方管理验证者和质押份额(参见后文的重新配置)；
 
-公共链。公共链在其余的用例中被使用：当一条链借助验证者不断产生新区块时。在这种情况下，一个区块中被授权的交易可能只是那些接收来自其他链的跨链消息的交易。应用示例包括：
+- 运行一些不是为多链应用设计的传统区块链算法(例如AMMs(译者注：自动做市商))；
 
-- Managing validators and stakes in one place (see reconfigurations below).
-- 管理验证者和权益的一个地方（请参见下面的重新配置）。
-- Running traditional blockchain algorithms (*e.g.* AMMs) that were not designed to take advantage of the multi-chain approach;
-- 运行传统的区块链算法（例如 AMM），这些算法并不是为了利用多链方法而设计的；
-- Facilitating the creation of microchains for new users.
-- 促进为新用户创建微链。
+- 帮助新用户创建微链。
 
-Public chains in Linera will be based on a full BFT consensus protocol. This is the only case in the Linera infrastructure where Linera validators take an active role in block proposals. We plan to rely on user chains and cross-chain messages instead of a traditional mempool to gather user transactions into new blocks.
+Linera的公开链基于完整的BFT公式协议。在Linera基础设置中，当且仅当微链为公开链时，验证者将创建微链的新区块。传统区块链使用内存池(mempool)搜集新区块的候选交易，Linera将使用用户微链和跨链消息代替内存池完成同样的功能。
 
-Linera中的公共链将基于完整的BFT共识协议。这是Linera基础设施中唯一一种情况，Linera验证者会在区块提案中发挥积极作用。我们计划依赖用户链和跨链消息，而不是传统的内存池，将用户交易收集到新的区块中。
+**发布/订阅频道**。微链*id*上的应用程序实例创建一个频道，并维护订阅者列表，这是跨链异步消息的常见用例。具体而言，频道按照如下方式运作：
 
-**Pub/sub channels.** A common use case for cross-chain asynchronous messages is for an application instance on a chain id to create a channel and maintain a list of subscribers to it. Specifically, a channel operates as follows:
+- 微链*id*上执行的交易可能向频道推送新消息；
 
-Pub/sub频道。跨链异步消息的一个常见用例是，链 id 上的应用程序实例创建一个通道并维护其订阅者列表。具体来说，通道的运作如下：
+- 此时，将有一条跨链消息被发送到当前订阅者(们)的收件箱；
 
-- Transactions executed on the chain *id* may push new messages to the channel;
-- 在链 id 上执行的交易可能会向通道推送新消息；
-- When this happens, the current subscribers receive a cross-chain message in their inbox;
-- 当这种情况发生时，当前的订阅者会在其收件箱中收到一条跨链消息；
-- The set of subscribers is managed on the chain *id* by receiving and executing messages $Subscribe(id')$ and $Unsubscribe(id')$ from subscribers $id'$.
-- 订阅者的集合由在链 id 上接收和执行来自订阅者的消息和维护。
+- 微链*id*通过接收并执行订阅者$id'$发送的$Subscribe(id')$和$Unsubscribe(id')$消息管理订阅者集合。
 
+我们已经发现在编写Linera应用程序时，发布/订阅频道时一个有用的抽象(也见第<a href='#Section4'>4</a>节)。Linera协议原生支持发布/评阅频道使得我们可以实现特定的优化。例如，无需链所有者做任何额外工作，新加入的订阅者便将收到频道的最后一条消息。
 
-We have found pub/sub channels to be a useful abstraction when programming Linera applications (see also Section <a href='#Section4'>4</a>). The Linera protocol supports pub/sub channels natively in order to enable specific optimizations. For instance, newly accepted subscribers currently receive the last message of a channel without additional work from the owner of the channel.
+**重新配置**。有能力变更Linera的验证者集合(也称为委员会)对于系统安全性至关重要(见第<a href='#Section5'>5</a>节)。
 
-我们发现 pub/sub 频道在编写 Linera 应用程序时是一个有用的抽象（也见第 4 节）。Linera 协议支持 pub/sub 频道的本地化，以便实现特定的优化。例如，新接受的订阅者当前可以在不需要频道所有者额外工作的情况下接收到频道的最后一条消息。
+为此，Linera原生部署了一个专用的Admin公开链，该链用于运行系统管理应用。系统管理应用负责追踪验证者集合(译者注：原文用successive sets of validators)，即*委员会*，包括验证者的质押份额和网络地址。系统管理应用产生的不同配置通过*纪元*进行标识。
 
-**Reconfigurations.** Being able to change the set of Linera validators (aka the *committee*) is crucial for the security of the system (see Section <a href='#Section5'>5</a>).
+Admin公开链将新配置发布到特定的频道，所有Linera微链在创建时都会订阅该频道，这样验证者集合的变更就能够安全地传播给所有参与者。$^{2}$新创建的未见将自动收到当前验证者集合(即管理频道中的最后一条消息)，并设置其当前*纪元*。
 
-重新配置。能够更改 Linera 验证者集合（也称为委员会）对于系统的安全性至关重要（见第 5 节）。
+如果创建了新的委员会，每条微链都将在其收件箱中收到一条消息。需要特别指出的是，微链所有者必须将创建委员会的新消息添加到新的区块，明确标识他们的链将迁移到新的验证者集合上。该操作必须新旧两组验证者都在同时执行，且旧验证者停止执行之前完成。
 
-To do so, Linera deploys a dedicated Admin public chain running the application for system management. This system application is in charge of keeping track of the successive sets of validators, aka *committees*, including their stakes and network addresses. The successive configurations produced by this application are identified by their *epoch* number.
+得益于Linera的可伸缩性，只要拥有足够多的活跃客户端，并行将大量的微链迁移到新的配置是可行的。为了简化该过程，并考虑到链所有者可能需要额外的离线时间，我们认为许多用户将倾向于授权第三方角色代表他们创建迁移快。在这种情况下，在授权期间，需要配置微链使用前文提到的2.5个RTT的协议。
 
-为此，Linera 部署了一个专用的管理公共链来运行系统管理应用。这个系统应用负责跟踪连续的验证者集合，即委员会，包括它们的权益和网络地址。由该应用程序产生的连续配置通过它们的时代编号进行标识。
-
-To safely disseminate the information that the set of validators is changing, the Admin publishes new configurations to a special channel that every Linera microchain is subscribed to when created. $^{2}$ A newly created microchain automatically receives the current validator set (*i.e.* the last message in the admin channel) and sets its current epoch number field.
-
-为了安全地传播验证者集合正在更改的信息，管理者将新配置发布到一个特殊的频道，每个创建时都会订阅的 Linera 微链。一个新创建的微链会自动接收当前的验证者集合（即管理频道中的最后一条消息），并设置其当前的时代编号字段。
-
-When a new committee is created, every microchain receives a message in its inbox. Importantly, microchain owners must include the incoming message in a new block to explicitly migrate their chain to the new set of validators. This must be done when both sets of validators are still operating, before the previous set stops.
-
-当新的委员会被创建时，每个微链都会在其收件箱中收到一条消息。重要的是，微链所有者必须将传入的消息包含在一个新的区块中，以明确地将他们的链迁移到新的验证者集合上。这必须在两组验证者仍在运行，并且之前的验证者组停止之前完成。
-
-Thanks to the scalable nature of Linera, migrating a large number of chains to a new configuration in a short period of time is doable in parallel provided that enough clients are active. To facilitate this process and allow chain owners to go offline for an extended period, we envision that many users will authorize a third party to create the migration blocks on their behalf. This will however require configuring the chain to use the 2.5 round-trip protocol mentioned above for the duration of the authorization.
-
-由于Linera具有可伸缩性，可以并行在短时间内迁移大量的链到新的配置，只要足够多的客户端是活跃的。为了简化这个过程，并允许链所有者在长时间内离线，我们预计许多用户将授权第三方代表他们创建迁移块。然而，这将需要配置链在授权期间使用上述提及的 2.5 往返协议。
-
-To prevent long-range attacks, the Admin chain will also regularly suggest old committees to be *deprecated*. After accepting such an update, microchains will ignore messages in blocks certified only by deprecated committees. The old messages will be accepted again only after they are included in a chain of blocks ending with a trusted configuration (hence *re-certified*).
-
-为了防止远程攻击，管理公共链还将定期建议废弃旧的委员会。在接受此类更新后，微链将忽略仅由已废弃的委员会认证的区块中的消息。只有在这些消息被包含在一个以受信任配置结束的区块链中（因此重新认证）后，才会再次接受这些旧消息。
+为了防止长程攻击，Admin公开链将定期提议*废除*旧委员会。当旧委员会被废弃后，微链将忽略仅由旧委员会认证的区块消息，在新的可信委员会(因此导致重新认证)认证的区块重新包含这些旧消息后，这些消息将重新被处理和确认。
 
 ## 3 Analysis of the Multi-Chain Protocol   多链协议分析
 
