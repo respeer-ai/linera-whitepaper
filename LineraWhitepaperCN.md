@@ -376,24 +376,21 @@ Admin公开链将新配置发布到特定的频道，所有Linera微链在创建
 
 为了防止长程攻击，Admin公开链将定期提议*废除*旧委员会。当旧委员会被废弃后，微链将忽略仅由旧委员会认证的区块消息，在新的可信委员会(因此导致重新认证)认证的区块重新包含这些旧消息后，这些消息将重新被处理和确认。
 
-## 3 Analysis of the Multi-Chain Protocol   多链协议分析
+## 3 多链协议分析
 
-<a name='Section3'>In</a> this section, we analyze the design goals set by the Linera blockchain, including responsiveness, scalability and security guarantees.
+<a name='Section3'>本章</a>我们将分析Linera区块链的设计目标，包括响应性、扩展性与安全性保证。
 
-在这一部分，我们分析了Linera区块链设定的设计目标，包括响应性、可扩展性和安全性保证。
+### 3.1 响应性
 
-### 3.1 Responsiveness  响应性
+传统区块链交互的常见问题是缺乏性能保证。提交到内存池的交易可能立即被选中，或一段时间后被选中，也可能永远不会这选中，其结果取决于其他用户在同一时间提交的交易。如果需要取消待处理的交易，通常需要以更高的gas费用创建一条新交易。此外，传统区块链的TPS是固定且有限的：大量突发提交的交易(例如热门空投)将最终导致消息积压，和/或交易手续费激增。由于MEV(Miner Extractable Value)技术，内存池系统也让用户面临价值流失的风险。
 
-A common problem when interacting with classical blockchains is the lack of performance guarantees. Transactions submitted to the mempool may be picked instantly, after a moment, or never, depending on the other user transactions posted around the same time. Canceling a pending transaction typically requires submitting another one with a higher gas fee. Furthermore, classical blockchains have a fixed and limited throughput: large enough bursts of submitted transactions (e.g. due to a popular airdrop) must eventually cause a backlog and/or a surge in transaction fees. Mempool systems also expose users to value drainage with Miner Extractable Value (MEV) techniques.
-
-在与传统区块链进行交互时常见的问题是缺乏性能保证。提交到内存池的交易可能会立即被选中，或者在一段时间后被选中，也可能永远不会被选中，这取决于其他用户在同一时间提交的交易。取消待处理的交易通常需要提交另一个带有更高 gas 费用的交易。此外，传统区块链具有固定且有限的吞吐量：足够大的交易提交突发（如由于热门空投而引起的）最终必然会导致积压和/或交易费用激增。内存池系统还通过矿工可提取价值（MEV）技术让用户面临价值流失的风险。
-
-Linera allows users to manage their own chain and work around these problems thanks to a lightweight block extension protocol inspired by client-based reliable broadcast (Section <a href='#Section2.8'>2.8</a>). This approach does not require a mempool, as users submit their transactions directly to the validators and fully control the processing time. The parallel communication with the validators means that the only processing delay is imposed by the network roundtrip time (RTT) between the client and the validators (usually a few hundred milliseconds). Finally, we anticipate that removing the mempool and diminishing latency should greatly reduce MEV opportunities.
-
-Linera 允许用户管理自己的链，并通过受 client-based reliable broadcast (Section 2.8) 启发的轻量级区块扩展协议解决这些问题。这种方法不需要内存池，因为用户直接将其交易提交给验证者，并完全控制处理时间。与验证者的并行通信意味着唯一的处理延迟来自客户端和验证者之间的网络往返时间（RTT）（通常为几百毫秒）。最后，我们预计移除内存池并减少延迟应该会大大减少 MEV 机会。
-
+收到基于客户端的可靠广播协议启发，Linera允许用户管理自己的链，并且使用一种轻量级的区块扩展协议解决这些问题。该方法不需要内存池，用户直接向验证者提交交易，并可以完全控制交易处理时间。客户端与验证者之间的并发通信意味着交易的处理延迟仅来自于客户端和验证者之间的网络传输RTT(通常为几百毫秒)。最后，我们预期移除内存池、降低延迟将大大减少MEV机会。
 
 ### 3.2 Scalability    可扩展性
+
+### 3.2 可扩展性
+
+===========================================================================================
 
 The microchain approach (Section <a href='#Section2.4'>2.4</a>) allows Linera validators to be efficiently sharded across multiple workers. Concretely, each worker in a validator is responsible for a particular subset of microchains. Clients communicate with the load balancer of each validator, which dispatches queries internally to the appropriate worker (Figure 2).
 
