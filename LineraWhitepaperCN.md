@@ -390,33 +390,22 @@ Admin公开链将新配置发布到特定的频道，所有Linera微链在创建
 
 ### 3.2 可扩展性
 
-===========================================================================================
-
-The microchain approach (Section <a href='#Section2.4'>2.4</a>) allows Linera validators to be efficiently sharded across multiple workers. Concretely, each worker in a validator is responsible for a particular subset of microchains. Clients communicate with the load balancer of each validator, which dispatches queries internally to the appropriate worker (Figure 2).
-
-微链方法（第2.4节）允许 Linera 验证者在多个工作节点之间高效地进行分片。具体来说，验证者中的每个工作节点负责处理特定的微链子集。客户端与每个验证者的负载均衡器进行通信，负载均衡器将查询内部分配给适当的工作节点（图2）。
+微链的应用(第<a href='#Section2.4'>2.4</a>节)使得Linera验证者可以在多个工作节点之间高效地进行分片。具体而言，验证者的每个工作节点负责处理特定的微链子集。客户端与验证者的负载均衡器通信，负载均衡器将请求转发个合适的内部工作节点(图2).
 
 ![image](https://github.com/kikakkz/linera-whitepaper/assets/13128505/a7654bf4-7c6b-4b90-8bcd-0a8e3b485c69)
 
-This design allows Linera to scale horizontally as the load of the system increases: each validator only needs to add worker machines to cope with the traffic. Importantly, sharding is internal: the number of workers and the assignment of microchains to workers do not need to be consistent across validators.
+这样的设计使得Linera在系统负载增加时可以水平扩展：验证者只需要增加内部工作节点应对流量。需要特别指出的是，分片是验证者的内部工作：这意味着验证者的工作节点数量，以及每个工作节点的微链分配方式在不同的验证者之间并不需要保持一致。
 
-这种设计使得 Linera 在系统负载增加时可以水平扩展：每个验证者只需要增加工作节点来应对流量。重要的是，分片是内部的：工作节点的数量和微链分配给工作节点的方式在不同的验证者之间并不需要保持一致。
+验证者的工作节点之间从属于运营验证者的单一实体，因此工作节点之间彼此互相信任。因此，工作节点之间的通信——即Linera的跨链请求(第<a href='#Section2.5'>2.5</a>节)——是快速而廉价的。
 
-Workers within a single validator belong to a single entity and thus trust one another. This makes the communication between workers—and therefore the cross-chain requests of Linera (Section <a href='#Section2.5'>2.5</a>)—quick and inexpensive.
+Linera的分片模型与大家熟知的区块链分片方法[<a href='#References31'>31</a>, <a href='#References33'>33</a>]不同，后者的跨链消息发生在相互不信任的节点组(即分片验证者)之间，这些节点组通常分布在互联网上，因而会造成显著的开销。Linera的跨链消息由相互信任的工作节点点对点完成，开销更小。这样的实现，也使得那些想控制其操作的客户端可以对大的验证者进行高效审计，我们将在第<a href='#Section5'>5</a>节中介绍审计操作。
 
-单个验证者内的工作节点属于单一实体，因此彼此之间相互信任。这使得 Linera 的工作节点之间的通信——因此也就是 Linera 的跨链请求（第2.5节）——变得快速且廉价。
+在Linera的弹性架构下，验证者可以适应流量波动。当提交的交易数量增加，验证者很容易增加处理交易的云端工作节点；反之验证者可以快速关闭工作节点以降低成本。
 
-The sharding model of Linera is different from the approach called *blockchain sharding* [<a href='#References31'>31</a>, <a href='#References33'>33</a>]. In the latter, cross-chain messages are exchanged between groups of mutually distrusting nodes (i.e., the validators in charge of each shard) usually spread across the Internet. This incurs significant overhead. Linera uses point-to-point communication across co-located workers that trust each other and requires much fewer resources. At the same time, larger validators can be efficiently audited by clients who want to control their operations. We describe the audit operation in Section <a href='#Section5'>5</a>.
+Linera的*公开链*中，不同客户端提交的区块遵循完整的BFT协议达成共识(第<a href='#Section2.9'>2.9</a>节)，对于多条*公开链*而言，共识协议的实例化发生在每条公开链，而不针对整个系统。这样的设计有很多好处。首先，不同公开链的用户不会降低彼此的使用体验；其次，单条微链的TPS不会称为真个系统的限制因素；最后，通过创建新的微链并增大单个验证者的规模(译者注：考虑到BFT协议增加验证者数量到一定级别，将可能会降低共识达成的效率，此处应指在添加验证者的工作节点)，Linera的TPS总是可以提高的。
 
-Linera 的分片模型与所谓的区块链分片方法[31, 33]不同。在后者中，跨链消息是在相互不信任的节点组（即每个分片的验证者）之间交换的，这些节点通常分布在互联网上。这会造成很大的开销。Linera 使用了相互信任的共同工作节点之间的点对点通信，并且需要的资源要少得多。同时，希望控制其操作的客户端可以对较大的验证者进行高效审计。我们将在第5节中介绍审计操作。
 
-The elastic architecture of Linera allows validators to adapt to traffic fluctuations. When an increased number of transactions are submitted, it is easy to increase the number of cloud-based workers processing the transactions. The same workers can be quickly turned off when no longer needed to reduce costs.
-
-Linera 的弹性架构允许验证者适应流量波动。当提交的交易数量增加时，很容易增加处理交易的基于云的工作节点的数量。不再需要时，这些工作节点可以迅速关闭以减少成本。
-
-The *public chains* of Linera require a full BFT consensus protocol to order blocks submitted by multiple clients (Section <a href='#Section2.9'>2.9</a>). Yet, the consensus protocol is instantiated once per public microchain rather than once for the entire system. This has a number of benefits. First, users from different public microchains cannot degrade each other’s experience. Second, the transaction rate of a single microchain is not a limiting factor for the entire system. Ultimately, the throughput of Linera can be always increased by creating additional microchains and augmenting the size of validators.
-
-Linera 的公共链需要使用完整的 BFT 共识协议来对多个客户端提交的区块进行排序（第2.9节）。然而，共识协议在每个公共微链中只被实例化一次，而不是针对整个系统。这有许多好处。首先，来自不同公共微链的用户不会降低彼此的体验。其次，单个微链的交易速率不会成为整个系统的限制因素。最终，通过创建额外的微链并增加验证者的规模，Linera 的吞吐量总是可以提高的。
+=========================================================================
 
 ### 3.3 Security  安全性
 
