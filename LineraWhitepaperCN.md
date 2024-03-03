@@ -474,41 +474,26 @@ Linera应用程序默认是多链的，其状态通常分布在几条微链上�
 
 **发布/订阅频道**。除了一对一通信，Linera还支持使用*频道*进行一对多通信。用户可以在应用内创建一个频道，运行在其他微链上的同一应用程序的实例可以通过发送包含微链标识的订阅消息订阅该频道。特别需要指出的是，只有当频道发布者将订阅请求消息添加到自己的微链，以完成接受该订阅后，订阅者才会被添加到频道。底层实现上，频道以一组一对一连接的方式存在，发布到频道的消息将被被提交到所有订阅者的收件箱，并可以被订阅者接收。设计上，新加入的订阅者将只会接收到频道的最后一条消息，而非全部历史消息。
 
+### 4.4 本地可组合性
+
+**同步调用**。运行在相同微链上的不同Linera应用可以通过与经典区块链(如以太坊<a href='#References32'>[32]</a>)中的智能合约调用一样的同步调用进行通信(参阅图4的顶部部分)。原子单个用户的一系列应用程序调用产生的状态修改时原子的，换句话说，这些调用要么全部成功，要么全部失败。调用一个应用实例将会创建该应用的内部状态的虚拟副本，并在状态缓存上执行该应用，此时，新的状态尚未写入存储，如果任何事务失败，所有暂存的修改将被丢弃。
+
+**会话**。某些场景下，我们希望将一个状态片段的管理委托给另一个应用程序，管理前述分离状态的临时会话称为*会话*。一个可能的典型用例如下：(i)应用B调用代币管理应用A；(ii)提取A账本中的一些代币并放入一个新会话；(iii)B接收该会话的所有权；(iv)B调用该会话将代币存入代币管理应用A的另一个账户，这一操作实际上消耗并终结会话。
+
+会话将确保又单个应用程序拥有(没有重复的会话)。会话的消耗时强制性的：会话必须在交易结束前被正确消耗，否则交易将失败。除了资产，会话也适用于管理临时合同，例如偿还闪电贷<a href='#References25'>[25]</a>。
+
+### 4.5 用户认证
+
+应用程序通常需要验证终端用户身份，以便授权某些操作。例如，转移资产应该需要所有者许可。
+
+在Linera中，当用户在其拥有的微链上提议一个新区块时，用户将被认证(见第<a href='#Section2.8'>2.8</a>节)。当区块执行时，区块的签名者，称为*authenticated signer*，对于区块中的所有操作都是默认可见的。
+
+创建跨链消息的操作可以选择性地将当前的authenticated signer与消息一起传递，临时存放在另外一条微链(比如公开链)的资产可能需要由所有者来取回。
+
+同样，当调用同一微链上的另一个应用时，authenticated signers也可能被传递，这样应用可以创建新资产，并通过抽象API接口，使得其他应用可以使用该资产。
 
 
-==================================================================
-
-### 4.4 Local composability  本地可组合性
-
-**Synchronous calls.** On the same microchain, different Linera applications can be composed using synchronous calls similar to smart-contract calls in classical blockchains such as Ethereum <a href='#References32'>[32]</a> (see the top part of Figure 4). The state modifications resulting from a sequence of application calls and originating from a single user transaction are atomic. In other words, either all of the calls succeed or all of them fail. Calling an application creates a virtual copy of its internal state and executes the call on the cached state. At this point, the new state is not yet written to storage. If any of the transactions fails, all the staged modifications are discarded.
-
-同步调用。在同一微链上，不同的 Linera 应用程序可以使用类似于经典区块链（如以太坊[32]）中的智能合约调用的同步调用进行组合（请参阅图4的顶部部分）。由一系列应用程序调用产生的状态修改是原子性的，并源自单个用户交易。换句话说，所有调用要么全部成功，要么全部失败。调用一个应用程序会创建其内部状态的虚拟副本，并在缓存状态上执行调用。此时，新状态尚未写入存储。如果任何事务失败，所有暂存的修改将被丢弃。
-
-**Sessions.** In some cases, it is desirable to delegate the management of a piece of state from one application to another. We call the temporary object managing such a detached state a *session*. A typical example of a use case may go as follows: (i) an application B calls into the token-management application A; (ii) some tokens are withdrawn from the ledger of A and put into a new session; (iii) B receives ownership of the session; (iv) B calls into the session to move the tokens back to the ledger of A, say, under another account; this effectively consumes and terminates the session.
-
-会话。在某些情况下，希望将一个状态片段的管理委托给另一个应用程序。我们将管理这样的分离状态的临时对象称为会话。一个典型的用例可能如下：（i）应用程序 B 调用代币管理应用程序 A；（ii）从 A 的分类帐中提取一些代币并放入一个新的会话；（iii）B 接收会话的所有权；（iv）B 调用会话将代币移回 A 的分类帐，例如，到另一个账户；这实际上消耗并终止了会话。
-
-Sessions are guaranteed to be owned by a single application (no duplication). Consuming a session is not optional: sessions must be properly consumed before the end of the current transaction, otherwise, the transaction will fail. In addition to assets, sessions are thus suitable for managing temporary obligations, for instance, the obligation to pay back a flash loan <a href='#References25'>[25]</a>.
-
-会话保证由单个应用程序拥有（不重复）。消耗会话是强制性的：会话必须在当前交易结束之前正确地被消耗，否则交易将失败。除了资产外，会话因此适用于管理临时义务，例如偿还闪电贷款的义务[25]。
-
-### 4.5 User authentication   用户认证
-
-Applications often need to authenticate end users in order to authorize certain actions. For instance, transferring an asset should require the permission of its owner.
-
-在应用程序中，通常需要对最终用户进行身份验证以授权执行某些操作。例如，转移资产应该需要其所有者的许可。
-
-In Linera, users are authenticated when they propose a block in a chain that they own (Section <a href='#Section2.8'>2.8</a>). During execution, the identity of the user that signed the current block, called the *authenticated signer*, is visible to all the operations contained in the block by default.
-
-在Linera中，当用户在拥有的链上提出一个区块时会被认证（见第2.8节）。在执行过程中，签署当前区块的用户身份，默认情况下对该区块中包含的所有操作都是可见的，称为经过认证的签名者。
-
-An operation creating a cross-chain message may optionally propagate the current authenticated signer along with the message. This is important so that assets temporarily placed on another chain (say, a public chain) may be claimed by their owner.
-
-创建跨链消息的操作可以选择性地将当前经过认证的签名者与消息一起传播。这很重要，因为暂时放置在另一条链上（比如公共链）的资产可能需要它们的所有者来索取。
-
-Similarly, authenticated signers may be propagated when calling another application on the same chain. This allows applications to program new categories of assets and make them available to other applications using abstract APIs.
-
-同样，在调用同一链上的另一个应用程序时，经过认证的签名者也可以被传播。这使得应用程序能够编写新类别的资产，并使用抽象API使其对其他应用程序可用。
+====================================================================
 
 ### 4.6 Ephemeral chains    瞬时链
 
