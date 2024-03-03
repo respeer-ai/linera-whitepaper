@@ -404,76 +404,45 @@ Linera的分片模型与大家熟知的区块链分片方法[<a href='#Reference
 
 Linera的*公开链*中，不同客户端提交的区块遵循完整的BFT协议达成共识(第<a href='#Section2.9'>2.9</a>节)，对于多条*公开链*而言，共识协议的实例化发生在每条公开链，而不针对整个系统。这样的设计有很多好处。首先，不同公开链的用户不会降低彼此的使用体验；其次，单条微链的TPS不会称为真个系统的限制因素；最后，通过创建新的微链并增大单个验证者的规模(译者注：考虑到BFT协议增加验证者数量到一定级别，将可能会降低共识达成的效率，此处应指在添加验证者的工作节点)，Linera的TPS总是可以提高的。
 
+### 3.3 Security
 
-=========================================================================
+### 3.3 安全性
 
-### 3.3 Security  安全性
+<a name='Section3.3'>本小节</a>我们将初步分析Linera多链协议的安全性。第<a href='#Section2'>2</a>章的阐述我们侧重于单所有者微链，后文中的分析我们将会扩展到其他类型的微链。
 
-<a name='Section3.3'>In</a> this section, we provide an informal security analysis of the Linera multi-chain protocol. Following the description in Section <a href='#Section2'>2</a>, we focus on single-owner chains. The analysis will be extended to other types of accounts (Section 2.9) in future reports.
+**声明1**(安全性)。*对于任何微链，每个验证者都能看到(同一个前缀)的相同区块序列，因此验证者以相同的顺序修改微链状态，并最终向其他微链提交相同的消息。*
 
-在本节中，我们对 Linera 多链协议进行了初步的安全性分析。根据第2节中的描述，我们侧重于单所有者链。未来的报告将会扩展分析到其他类型的账户（第2.9节）。
+当然，根绝Algorithm 2，在给定区块高度，每个诚实的验证者最多给每条微链的一个有效区块投票。根据quorum交集特性(第<a href='#Section2.2'>2.2</a>节)，在BFT前提下，一组验证者针对一条微链只能认证一个区块。从微链中发出的消息(Algorithm 1中的跨链请求)是当前区块序列的确定性函数。
 
-**Claim 1** (Safety). *For any microchain, every validator sees (a prefix of ) the same chain of blocks, therefore it applies the same sequence of modifications to the execution state of the chain and eventually delivers the same set of messages to the other chains*.
+需要特别指出的是，异步跨链消息在调度后仅传递一次，应用因此可以安全地转移资产。
 
-声明 1（安全性）。对于任何微链，每个验证者都看到（某段）相同的区块链，因此它们对链的执行状态应用相同的修改序列，并最终向其他链交付相同的消息集。
+**声明2**(链的最终一致性)。*只要一个诚实的验证者认证了新的区块，其他用户总是可以通过一系列步骤确保该区块被添加到每个诚实的验证者的链上*。
 
-Indeed, per Algorithm 2, each honest validator votes for at most one valid block at a given height per microchain. By the quorum intersection property (Section <a href='#Section2.2'>2.2</a>), under BFT assumption, there can be only one block per height per chain certified by a quorum of validators. The set of outgoing messages from a chain (the cross-requests in Algorithm 1) is a deterministic function of the current chain of blocks.
+事实上，每个用户都可以从诚实的验证者那里检索新的证书及其祖先，并将其提交给那些尚未接收到这些证书的验证者。第<a href='#Section2.8'>2.8</a>节中我们已经讨论过向验证者上传区块的确切顺序。
 
-确实，根据算法 2，每个诚实的验证者针对给定高度的每个微链最多投票支持一个有效的区块。基于 BFT 假设的择取交集属性（第2.2节），只能有一个经验证者择取认证的每个链高度的区块。从链中发出的消息集合（算法 1 中的跨链请求）是当前区块链的确定性函数。
+**声明3**(异步消息的最终一致性)。*只要一个诚实的验证者上的某条微链收到一条跨链消息，任何用户都可以通过一系列步骤确保该消息被其他诚实的验证者上的微链接收*。
 
-Importantly, asynchronous cross-chain messages are delivered exactly once after they are scheduled. This allows applications to safely transfer assets.
+微链通过某些交易触发异步消息，当且仅当触发异步消息的交易被一定数量的验证者验证，并添加到发送者的微链，异步消息才会被特定的验证者的链接收。此时，接收链将更新其状态以追踪消息来源(**received**$^{id}(α)$，第<a href='#Section2.6'>2.6</a>节)。这样的设计允许客户端在需要时从同一验证者下载相应区块，第一次添加该区块(译者注：指包含触发跨链消息交易的区块)的诚实验证者会将跨链消息添加到接收链的收件箱。
 
-重要的是，异步的跨链消息在调度后仅被传递一次。这使得应用可以安全地转移资产。
+**声明4**(真实性)。*只有微链的所有者(们)才能向微链添加区块*。
 
-**Claim 2** (Eventual consistency of chains). *If a microchain is extended with a new certified block on an honest validator, any user can take a series of steps to ensure that this block is added to the chain on every honest validator*.
+诚实的验证者仅在区块被链所有者认证之后才接收区块(Algorithm 2)，以确保链所有者外的角色不能向微链添加区块。其他类型的微链(第<a href='#Section2.9'>2.9</a>)也实现了同样的验证。
 
-声明 2（区块链的最终一致性）。如果在一个诚实的验证者上对微链进行了新的认证区块扩展，任何用户都可以采取一系列步骤来确保这个区块被添加到每个诚实的验证者的链上。
+**声明5**(分段审计)。*我们拥有足够的公开密码学证明，确保Linera的每条微链状态都可以分布式地进行正确性审计*。
 
-Indeed, any user can retrieve the new certificate and its predecessors from the honest validator and deliver it to validators that still have not received it. The exact sequencing in which blocks can be uploaded to a validator is discussed in Section <a href='#Section2.8'>2.8</a>.
+每一个Linera客户端都可以请求任何微链的副本并重新执行认证过的区块，这样就可以验证微链的连续执行状态和发送过消息集合。不同的验证者通常通过区块中包含的执行执行哈希比较执行状态，而微链收到的消息则应该与发出消息的链进行比较(第<a href='#Section5.2'>5.2</a>节)。
 
-事实上，任何用户都可以从诚实的验证者那里检索新的认证以及它的前序，并将其交付给那些尚未收到的验证者。有关区块上传到验证者的确切顺序在第2.8节中有讨论。
+**生命6**(最坏情况效率)。*在但所有者链中，拜占庭验证者不应给正确用户的区块创建和确认带来显著延迟*。
 
-**Claim 3** (Eventual consistency of asynchronous messages). *If a microchain receives a crosschain message on an honest validator, any user can take a series of steps to ensure that this message is received by the chain on every honest validator*.
+Linera客户端并发联系所有验证者，一旦客户端收到一定数量的验证者签名，即将操作视为已完成(第<a href='#Section2.8'>2.8</a>节)。
 
-声明 3（异步消息的最终一致性）。如果在一个诚实的验证者上的微链接收到了跨链消息，任何用户都可以采取一系列步骤来确保这个消息被每个诚实的验证者的链接收到。
-
-An asynchronous message is received by a chain on a particular validator only after a block containing a transaction that triggers the message is signed by a quorum and added to the sender’s chain. When this happens, the state of the receiving chain is updated to track the origin of the message (see **received**$^{id}(α)$ in Section <a href='#Section2.6'>2.6</a>). This allows a client to download the corresponding block from the same validator if needed. Any honest validator adding the same block for the first time will add the same message to the recipient’s inbox.
-
-异步消息只有在包含触发消息的交易的区块被择取并添加到发送者的区块链后，才会被特定验证者的链接收。当发生这种情况时，接收链的状态将会被更新以追踪消息的来源（请参见第2.6节中的received）。这允许客户端在需要时从同一验证者下载相应的区块。任何第一次添加相同区块的诚实验证者将把相同的消息添加到接收者的收件箱中。
-
-**Claim 4** (Authenticity). *Only the owner(s) of a microchain can extend their microchain*.
-
-声明 4（真实性）。只有微链的所有者才能扩展他们的微链。
-
-Honest validators only accept block proposals if they are authenticated by an owner (Algorithm 2). This ensures that no one else can add blocks to the microchain. Other types of microchains (Section <a href='#Section2.9'>2.9</a>) implement similar verifications.
-
-诚实的验证者仅在区块经过所有者认证时才接受区块提案（算法2）。这确保了没有其他人可以向微链添加区块。其他类型的微链（第2.9节）也实施了类似的验证。
-
-**Claim 5** (Piecewise Auditability). *There is sufficient public cryptographic evidence for the state of Linera to be audited for correctness in a distributed way, one chain at a time*.
-
-声明 5（分段可审计性）。对于 Linera 的状态，存在足够的公共加密证据，可以按照分布式方式逐个链进行正确性审计。
-
-Any Linera client can request a copy of any microchain and re-execute the certified blocks. This allows verifying the successive execution states and the set of outgoing messages from the chain. Execution states are typically compared across validators by including execution hashes in blocks. The received messages of a chain should be compared to the outgoing messages from the other chains (Section <a href='#Section5.2'>5.2</a>).
-
-任何 Linera 客户端都可以请求任何微链的副本并重新执行认证的区块。这允许验证连续的执行状态和区块链的发出消息集合。执行状态通常通过在区块中包含执行哈希来在验证者之间进行比较。一条链的接收消息应该与其他链的发出消息进行比较（第5.2节）。
-
-**Claim 6** (Worst-case Efficiency). *In a single-owner chain, Byzantine validators cannot significantly delay block proposals and block confirmations by correct users*.
-
-声明 6（最坏情况效率）。在单所有者链中，拜占庭验证者无法通过正确用户显著延迟区块提案和区块确认。
-
-Linera clients contact all the validators in parallel and consider an operation as completed as soon as they receive signatures from a quorum of validators (Section <a href='#Section2.8'>2.8</a>).
-
-Linera 客户端会并行地联系所有验证者，并且一旦他们收到来自验证者择取的签名，就会将操作视为已完成（第2.8节）。
-
-**Claim 7** (Monotonic block validation). *In a single-owner chain, if a block proposal is the first one to be signed by the owner at a given block height and it is accepted by an honest validator, then with appropriate actions, the chain owner always eventually succeeds in gathering enough votes to produce a certificate*.
-
-声明 7（单调区块验证）。在单所有者链中，如果一个区块提案是在给定高度首次由所有者签名，并且被诚实验证者接受，那么通过适当的操作，链所有者总能最终成功地聚集足够的选票来生成一个证书。
+**声明7**(单一区块验证)。*在单所有者链中，在给定高度，只要有诚实的验证者接受了链所有者签名的区块提议，那么通过适当的操作，链所有者最终一定能成功搜集到足够的投票来创建证书*。
 
 ![image](https://github.com/kikakkz/linera-whitepaper/assets/13128505/d8aea5cc-67c6-440b-bbb1-b9d457b96c8a)
 
-If the block proposal *B* for a chain *id* is accepted by a validator and is the first one ever signed at this height, this means that every other validator α has already accepted the proposal (*i.e.* ${pending}^{id}(α) = B$) or has not voted yet (*i.e.* ${pending}^{id}(α) = ⊥$). In the latter case, block validation may temporarily fail for *α* if some earlier blocks or messages are missing: this can be resolved by updating the validator with the missing blocks (see Section <a href='#Section2.8'>2.8</a>). After proper synchronization, in the absence of external oracle and nondeterministic behaviors, submitting the proposal *B* to the validator will eventually produce the expected vote for *B*.
+假定微链*id*区块提议*B*是某高度的第一个签名区块，当一个验证者接受该区块时，意味着其他验证者*α*要么已经接受该区块(即${pending}^{id}(α) = B$)，要么还未进行投票(即${pending}^{id}(α) = ⊥$)。针对后一种情况，验证者*α*对于区块*B*的验证可能因为早期区块或消息缺失而失败：这种情况可以通过向该验证者上传缺失区块解决(参见第<a href='#Section2.8'>2.8</a>节)。同步完成后，在没有外部预言机和非确定性行为的情况下，验证者*α*将最终给提交的区块*B*产生期望的投票。
 
-如果区块提案 B 用于某个链 ID 被验证者接受，并且是在该高度首次被签名，这意味着每个其他验证者 α 已经接受了该提案（即 ）或尚未投票（即 ）。在后一种情况下，如果一些早期的区块或消息丢失，可能会导致 α 的区块验证暂时失败：这可以通过向验证者更新缺失的区块来解决（参见第2.8节）。经过适当的同步，在没有外部预言机和非确定性行为的情况下，将提案 B 提交给验证者最终将产生对 B 的预期投票。
+=================================================
 
 ## 4 Building Web3 Applications in Linera    在 Linera 中构建 Web3 应用程序
 
