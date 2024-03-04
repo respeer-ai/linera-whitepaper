@@ -500,45 +500,23 @@ Linera编程模型的另一个特点在于能够创建短生命周期的许可�
 
 为了优化临时许可链的可用性(第<a href='#Section2.9'>2.9</a>节)，如共识协议所述，操作过程将会与用户权限交互创建区块。例如，上述原子交换的临时链中，只有已经锁定资产的链所有者能提议区块。另一个例子是用于两个用户下国际象棋的临时微链，这一微链中，应用可以决定哪位玩家需要移动，然后更新微链共识，只接受来自所选用户的下一个区块。一个更加贴近现实的国际象棋应用可能还需要包含裁判作为临时链的所有者，这样裁判可以强制执行游戏进展。
 
-===========================================================================================
-
-## 5 Decentralization
-
 ## 5 去中心化
-
-<a name='Section5'>Linera</a> encourages validators to use cloud infrastructure to unlock elastic scaling and benefit from standard production environments. To maximize decentralization, Linera relies on two key features: delegated proof of stake (DPoS) and audits by the community.
 
 <a name='Section5'>Linera</a>鼓励验证者基于云基础设施实现弹性扩展，并从标准生产环境获益。最大化的去中心化依赖两个关键特性得以实现：委托权益证明(DPoS)和社区审计。
 
-### 5.1 Delegated proof of stake
-
 ### 5.1 委托权益证明
-
-To ensure the long-term security of the system, Linera relies on delegated proof of stake (DPoS): the voting rights of validators are functions of their stakes in the system, together with the stakes that are delegated to them by end users. For DPoS to function correctly, users must be able to change their delegation preferences, and validators must have an automated procedure to join and leave the system. Both operations require a public chain where any user can submit transactions. Reconfiguring validators also requires a carefullydesigned migration protocol for every chain. Both mechanisms were sketched in Section <a href='#Section2.9'>2.9</a>.
 
 Linera依赖委托权益证明(DPoS)保障系统的长期安全性：验证者的投票权取决于他们在系统中的质押份额，以及终端用户委托给他们的质押份额。用户必须能够变更其委托选择，且验证者必须能够自动加入和离开系统，以便DPoS正确执行。这两种操作都需要一个任意用户都可以提交交易的公开链。针对每条微链，验证者的重新配置也需要一个精心设计的迁移协议。这两种机制在第<a href='#Section2.9'>2.9</a>节中已有简单概述。
 
-Token delegation and economics will be made more precise in a separate document. To address long-range attacks—where old committees become corrupt <a href='#References17'>[17]</a>—, Linera allows microchains to refuse cross-chain messages (*e.g.* payments) from committees that are not trusted anymore (see Section <a href='#Section2.9'>2.9</a>).
-
 代币委托和经济模型将在另外的文件做出更加精确的阐述。由于旧的委员会逐渐腐败<a href='#References17'>[17]</a>，Linera允许微链拒绝来自不再受到信任的委员会的跨链消息(例如支付)(见第<a href='#Section2.9'>2.9</a>节)，以解决长程攻击。
-
-### 5.2 Auditability
 
 ### 5.2 可审计性
 
-<a name='Section5.2'>Auditing</a> a blockchain traditionally requires running a *full node* that locally holds a copy of the entire transaction history. However, in the case of a high-throughput system, this may require significant amounts of disk space and CPU resources. When regular users—those using commodity hardware—need days or weeks to fully audit a decentralized system, the community may not be able to credibly deter a coalition of rogue validators from altering the protocol. Light clients <a href='#References14'>[14]</a> reduce resource usage but only check the block headers and do not provide the same level of verification.
-
 <a name='Section5.2'>一般而言</a>，区块链的传统审计方法需要运行一个保存完整交易历史副本的*全节点*，然而，一个高TPS的系统中，全节点需要大量的硬盘空间和CPU资源。假设普通用户(那些使用普通硬件的用户)需要耗费数天甚至数周才能完全审计一个去中心化系统时，社区可能没法阻止一组不良验证者改变协议。轻客户端<a href='#References14'>[14]</a>可以减少资源使用，但其只检查区块头，并不能提供同等级别的验证。
-
-In contrast, the microchain approach makes it possible for the community to continuously audit Linera validators. In Linera, an auditor is similar to a client (Section <a href='#Section2.8'>2.8</a>) in that it only needs to track a small subset of microchains. Because scalability in Linera relies on having many chains rather than larger blocks, it is always feasible to replay the execution of a single chain in real-time on commodity hardware.
 
 相较而言，微链的应用使得社区能够持续审计Linera验证者。在Linera中，审计者客户端(第<a href='#Section2.8'>2.8</a>节)相同，只需要追踪一小部分微链子集。鉴于Linera的扩展性依赖于更多的微链而非更大的区块，用户始终可以在普通硬件上实时重放单条微链的执行过程。
 
-For the Linera community to continuously verify all the chains, a distributed protocol can be put in place on top of a shared distributed storage such as IPFS <a href='#References5'>[5]</a> as follows. Executing the blocks in a chain allows to verify the execution state and the outgoing messages. Blocks should typically be marked as audited and the outgoing messages indexed in the distributed storage. To complete the verification of a chain, the client must also verify that each incoming message was indeed produced by its sender chain. This can be done by looking up incoming messages in the shared storage to see if they have been verified already, and otherwise, schedule their verification.
-
 我们可以在共享分布式存储(例如IPFS<a href='#References5'>[5]</a>)上建立一个分布式协议，以便Linera社区可以持续验证所有微链。执行微链的区块可以验证执行状态和发出去的消息，执行成功的区块通常应标记为已审计，且应该将发出去的消息在分布式存储中建立索引。客户端必须验证收到的消息确实来自于发送链，以完成微链的验证过程。通过查询这些消息在共享存储中的验证状态，客户端可以完成这一操作。如果客户端发现消息未验证，客户端应该发起验证流程。
-
-===================================================================
 
 ## Conclusion  结论
 
