@@ -148,8 +148,6 @@ Linera协议的目标，在于提供一个计算基础设施。应用开发者�
 
 最后，我们将阐述Linera如何管理当前验证者集(也称为委员会)。第<a href='#Section4'>4</a>章中我们将讨论Linera的编程模型，此外，审计员角色将在第<a href='#Section5'>5</a>章讨论。
 
-### 2.2 Security model
-
 ### 2.2 安全模型
 
 <a name='Section2.2'>Linera</a>的共识遵循拜占庭容错机制(BFT)<a href='#References13'>[13]</a>，所有参与者创建自己的公私钥密钥对。Linera使用委托权益证明（DPoS）模型，每个验证者的投票权与其直接质押份额和用为委托给该验证者的质押份额相关。
