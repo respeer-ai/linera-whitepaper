@@ -518,30 +518,25 @@ Linera依赖委托权益证明(DPoS)保障系统的长期安全性：验证者�
 
 我们可以在共享分布式存储(例如IPFS<a href='#References5'>[5]</a>)上建立一个分布式协议，以便Linera社区可以持续验证所有微链。执行微链的区块可以验证执行状态和发出去的消息，执行成功的区块通常应标记为已审计，且应该将发出去的消息在分布式存储中建立索引。客户端必须验证收到的消息确实来自于发送链，以完成微链的验证过程。通过查询这些消息在共享存储中的验证状态，客户端可以完成这一操作。如果客户端发现消息未验证，客户端应该发起验证流程。
 
-## Conclusion  结论
+## 结论
 
-Linera aims to deliver the first multi-chain infrastructure with predictable performance, responsiveness, and security at the Internet scale. To do so, Linera introduces the idea of operating many parallel chains, called *microchains*, in the same set of validators, and using the internal network of each validator to quickly deliver the asynchronous messages between chains. This architecture has a number of advantages:
+Linera旨在在互联网规模上提供可预测的性能、响应能力和安全性的第一个多链基础设施，Linera引入了在同一组验证者中运行许多并行链(称为*微链*)的概念，并利用每个验证者的内部网络快速传递跨链异步消息，以达成这一目标。这样的架构有许多优点：
 
-Linera旨在在互联网规模上提供可预测的性能、响应能力和安全性的第一个多链基础设施。为了实现这一目标，Linera引入了在相同一组验证者中运行许多并行链（称为微链）的概念，并利用每个验证者的内部网络快速传递链之间的异步消息。这种架构具有许多优势：
+- **弹性扩展**。在Linera中，可伸缩性时通过增加微链数量而非增加区块大小或创建区块的速率达成。每个验证者都可以随时添加和移除处理能力(即内部工作节点)，以维持多链应用的性能标准。
 
-- **Elastic scaling.** In Linera, scalability is obtained by adding chains, not by increasing the size or the rate of blocks. Each validator may add and remove capacity (aka internal workers) at any time to maintain nominal performance for multi-chain applications.
-- 弹性扩展。在Linera中，可伸缩性是通过增加链的方式获得的，而不是通过增加区块的大小或速率。每个验证者可以随时添加和移除容量（即内部工作人员），以维持多链应用的名义性能。
-- **Responsiveness.** When microchains are operated by a single user, Linera uses a simplified mempool-free consensus protocol inspired by reliable broadcast [<a href='#References7'>7</a>,<a href='#References12'>12</a>]. This reduces block latency and ultimately makes Web3 applications more responsive.
-- 响应能力。当微链由单个用户操作时，Linera使用了受可靠广播[7,12]启发的简化无内存池共识协议。这降低了区块延迟，并最终使Web3应用更具响应性。
-- **Composability.** Compared to other multi-chain systems, low block latency also helps with composability: it allows receivers of asynchronous messages from another chain to quickly answer by adding a new block.
-- 可组合性。与其他多链系统相比，低区块延迟还有助于可组合性：它允许来自另一条链的异步消息的接收者通过添加新区块来快速回复。
-- **Chain security.** Compared to traditional multi-chain systems, a benefit of running all the microchains in the same set of validators is that creating chains does not impact the security model of Linera.
-- 链安全。与传统的多链系统相比，在同一组验证者中运行所有微链的好处在于创建链不会影响Linera的安全模型。
-- **Decentralization.** Linera relies on delegated proof of stake (DPoS) for security. Each microchain can be separately executed on commodity hardware. This allows clients and auditors to continuously run their own verifications and hold validators accountable.
-- 分散化。Linera依赖于委托权益证明（DPoS）来确保安全性。每个微链可以在普通硬件上单独执行。这使得客户和审计者可以持续运行自己的验证并追究验证者的责任。
-- **Language agnostic.** The programming model of Linera does not depend on a specific programming language. After careful consideration, we have decided to concentrate our efforts on Wasm and Rust for the initial execution layer of Linera.
-- 语言无关。Linera的编程模型不依赖于特定的编程语言。经过慎重考虑后，我们决定将我们的工作集中在Wasm和Rust上，用于Linera的初始执行层。
+- **响应能力**。收到可靠广播启发[<a href='#References7'>7</a>,<a href='#References12'>12</a>]，Linera使用一种无内存池的共识协议实现单个用户的微链操作，这样的实现降低了区块延迟，因而可以极大提升Web3应用程序的响应能力。
 
-In future reports, we will formalize the protocols to support multi-owner chains as well as the other extensions mentioned in Section <a href='#Section2.9'>2.9</a>. In particular, we plan to incorporate a state-of-the-art consensus mechanism (e.g. [<a href='#References16'>16</a>, <a href='#References22'>22</a>, <a href='#References27'>27</a>]) on top of our existing multi-chain infrastructure. We also plan to describe the economic models for the fair remuneration of validators and incentivization of users separately. Linera’s ability to deactivate and archive microchains provides an elegant venue to control the storage costs of validators in the future. In general, we anticipate that Linera’s integrated architecture and the minimization of validator interactions will be extremely helpful when it comes to optimizing the costs of operating validators at scale.
+- **组合性**。相较于其他多链系统，低延迟的区块也将给组合性带来极大的帮助：接收者可以通过添加一个新区块来快速回复来自另一条微链的异步消息。
 
-在未来的报告中，我们将正式制定支持多所有者链的协议，以及第2.9节中提到的其他扩展。特别是，我们计划在我们现有的多链基础设施之上纳入最先进的共识机制（例如[16, 22, 27]）。我们还计划分别描述用于公平酬金验证者和激励用户的经济模型。Linera停用和存档微链的能力为将来控制验证者的存储成本提供了一个优雅的方法。总的来说，我们预计当涉及到优化大规模运营验证者的成本时，Linera集成的架构和最小化验证者交互将会非常有帮助。
+- **链的安全性**。与传统的多链系统相比，在同一组验证者中运行所有微链的好处，在于当需要创建新微链时，Linera的安全模型不会受到影响。
 
-<h1>References</h1>
+- **去中心化**。Linera依赖于委托权益证明(DPoS)确保安全性，每一条微链都可以在普通硬件上单独执行，客户端和审计者因此可以持续运行自己的验证，以确保验证者是负责可靠的。
+
+- **语言无关**。Linera的编程模型不依赖特定编程语言。经过慎重考虑，我们决定将我们的工作集中在Wasm和Rust上，这两种语言将作为Linera早期的执行层的开发语言。
+
+将来，我们将正式指定支持多所有者链的协议，以及第<a href='#Section2.9'>2.9</a>节中提到的其他扩展。特别地，我们计划在我们现有的多链基础设施上纳入最先进的共识机制(如[<a href='#References16'>16</a>, <a href='#References22'>22</a>, <a href='#References27'>27</a>])，验证者的公平酬金和用户激励经济模型也将单独予以说明。停用与归档微链的能力未将来验证者控制存储成本提供了一个优雅的解决方案。总而言之，我们预期当验证者规模持续增大需要优化成本时，Linera的集成架构与最小化验证者交互将会带来极大的帮助。
+
+<h1>参考文献</h1>
 <a name='References1'>[1]</a> Linera developer manual. https://linera.dev.
 
 <a name='References2'>[2]</a> Linera github repository. https://github.com/linera-io/linera-protocol.
