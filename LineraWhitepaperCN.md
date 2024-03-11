@@ -148,7 +148,7 @@ Linera协议的目标，在于提供一个计算基础设施。应用开发者�
 
 ### 2.2 安全模型
 
-<a name='Section2.2'>Linera</a>的共识遵循拜占庭容错机制(BFT)<a href='#References13'>[13]</a>，所有参与者创建自己的钥密钥对。Linera使用委托权益证明（DPoS）模型，每个验证者的投票权与其直接质押份额和用户委托给该验证者的质押份额相关。
+<a name='Section2.2'>Linera</a>的共识遵循拜占庭容错机制(BFT)<a href='#References13'>[13]</a>，所有参与者创建自己的密钥对。Linera使用委托权益证明（DPoS）模型，每个验证者的投票权与其直接质押份额和用户委托给该验证者的质押份额相关。
 
 **假设**。我们以总投票权为*N*的例子来说明Linera协议。一组未知的*Byzantine* (即*dishonest*)验证者子集可能偏离协议，与许多BFT协议[<a href='#References7'>7</a>, <a href='#References13'>13</a>]相似，假设该验证者子集最多控制*f*的投票权，其中*f*的取值范围为*0* ≤ *f* < $\frac{ N }{ 3 }$。在实践中，人们通常选择最大值作为*f*，即*f* = $\lfloor \frac{ N - 1 }{ 3 } \rfloor$。
 
